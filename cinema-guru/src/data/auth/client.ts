@@ -1,5 +1,5 @@
-import * as authApi from "@/api/auth"
-import type { AuthCredentials, AuthUser } from "@/types/auth"
+import * as authApi from "./api"
+import type { AuthCredentials, AuthUser } from "./types"
 
 const ACCESS_TOKEN_KEY = "accessToken"
 const SESSION_URL = "/api/auth/"

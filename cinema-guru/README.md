@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# Holberton Cinema Guru
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React (Vite + TypeScript) frontend for the Cinema Guru application.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Data access layer (reference)
 
-## React Compiler
+All server and client-side data access lives under **`cinema-guru/src/data/`**. Each domain (e.g. auth, future: movies) has its own folder with the same four-file layout. There are **no index files**; imports point directly at the module files.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Per-domain layout: `src/data/<domain>/`
 
-## Expanding the ESLint configuration
+| File              | Role                                                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`types.ts`**    | TypeScript types for requests, responses, and domain entities.                                                                                                            |
+| **`api.ts`**      | Raw HTTP: `fetch` calls to backend endpoints. No token handling; returns/throws.                                                                                          |
+| **`client.ts`**   | Orchestration: uses `api.ts`, handles tokens/storage, session validation. Exposes high-level functions (e.g. `login`, `register`, `validateSession`, `clearAccessToken`). |
+| **`context.tsx`** | React state: `createContext`, provider component, and `useX` hook. Uses the client for initial load and actions; exposes loading state and methods to the UI.             |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Auth domain: `src/data/auth/`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **`types.ts`**
+  - `AuthCredentials` (username, password)
+  - `AuthTokenResponse` (accessToken)
+  - `AuthUser` (username from session)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **`api.ts`**
+  - `login(credentials)` → POST `/api/auth/login`
+  - `register(credentials)` → POST `/api/auth/register`
+  - Returns `AuthTokenResponse`; throws on error.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **`client.ts`**
+  - Token in `localStorage` key `accessToken`.
+  - `login(credentials)`, `register(credentials)` — call api then store token.
+  - `validateSession()` — POST `/api/auth/` with Bearer token; returns `AuthUser | null`.
+  - `getAccessToken()`, `setAccessToken()`, `clearAccessToken()`.
+
+- **`context.tsx`**
+  - `AuthProvider`: on mount runs `validateSession()` once, sets `isLoading` to false when done.
+  - `useAuth()`: `{ isLoggedIn, username, isLoading, refreshSession, logout }`.
+  - Must be used inside `AuthProvider`.
+
+### Import paths (no index)
+
+- `AuthProvider`, `useAuth` → `@/data/auth/context`
+- `login`, `register`, token/session helpers → `@/data/auth/client`
+- `AuthCredentials`, `AuthUser`, `AuthTokenResponse` → `@/data/auth/types`
+
+### Adding a new data domain (e.g. movies)
+
+1. Create `src/data/movies/` with `types.ts`, `api.ts`, `client.ts`, and optionally `context.tsx`.
+2. In **api.ts**: define `fetch` calls to the backend (e.g. GET/POST `/api/movies/...`).
+3. In **client.ts**: import from `./api` and `./types`; add caching, auth headers, or other orchestration; export functions used by the app.
+4. In **context.tsx** (if needed): create a provider and a `useMovies()` (or similar) that uses the client and exposes state + loading.
+5. In components: import from `@/data/movies/context`, `@/data/movies/client`, or `@/data/movies/types` as needed — no index re-exports.
+
+---
+
+## Run
+
+From repo root:
+
+```bash
+cd cinema-guru
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Build: `npm run build`.

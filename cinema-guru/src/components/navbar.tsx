@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/data/auth/context"
 import { cn } from "@/lib/utils"
 
 function Navbar() {

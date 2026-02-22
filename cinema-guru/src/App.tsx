@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/data/auth/context"
 import { AuthForm } from "./components/auth/auth-form"
 import { Home } from "./pages/home"
 import { ProtectedRoute } from "./components/protected-route"
@@ -20,7 +20,11 @@ function AuthPage() {
 }
 
 function App() {
-  const { isLoggedIn } = useAuth()
+  const { isLoggedIn, isLoading } = useAuth()
+
+  if (isLoading) {
+    return null
+  }
 
   return (
     <BrowserRouter>

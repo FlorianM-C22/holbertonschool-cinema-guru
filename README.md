@@ -1,1 +1,1 @@
-# Holberton Cinema Guru
+# Cinema Guru

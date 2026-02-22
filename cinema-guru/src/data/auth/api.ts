@@ -1,4 +1,4 @@
-import type { AuthCredentials, AuthTokenResponse } from "@/types/auth"
+import type { AuthCredentials, AuthTokenResponse } from "./types"
 
 const LOGIN_URL = "/api/auth/login"
 const REGISTER_URL = "/api/auth/register"

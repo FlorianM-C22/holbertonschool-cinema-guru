@@ -1,4 +1,3 @@
-/** Auth-related type definitions (request/response and session). */
 /** Credentials sent to login and register endpoints */
 export type AuthCredentials = {
   username: string

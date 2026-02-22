@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { login as loginAuth, register } from "@/lib/auth"
-import type { AuthCredentials } from "@/types/auth"
+import { login as loginAuth, register } from "@/data/auth/client"
+import type { AuthCredentials } from "@/data/auth/types"
 import { cn } from "@/lib/utils"
 
 type AuthMode = "login" | "signup"
