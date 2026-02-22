@@ -1,4 +1,4 @@
-import { getTMDB } from "./client"
+import { getAccessToken, getTMDB } from "./client"
 import type { MovieCategory, TvCategory } from "./types"
 import type {
   ConfigurationResponse,
@@ -8,6 +8,7 @@ import type {
 } from "@lorenzopant/tmdb"
 
 const POSTER_SIZE = "w342"
+const BACKDROP_SIZE = "w1280"
 
 let cachedConfig: ConfigurationResponse | null = null
 
@@ -33,6 +34,17 @@ async function getPosterUrl(posterPath: string | null | undefined): Promise<stri
 function getPosterUrlSync(posterPath: string | null | undefined): string | null {
   if (!cachedConfig) return null
   return buildPosterUrl(cachedConfig.images.secure_base_url, posterPath)
+}
+
+function buildBackdropUrl(baseUrl: string, backdropPath: string | null | undefined): string | null {
+  if (!backdropPath) return null
+  const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`
+  return `${base}${BACKDROP_SIZE}${backdropPath}`
+}
+
+function getBackdropUrlSync(backdropPath: string | null | undefined): string | null {
+  if (!cachedConfig) return null
+  return buildBackdropUrl(cachedConfig.images.secure_base_url, backdropPath)
 }
 
 async function fetchMovieList(
@@ -69,11 +81,69 @@ async function fetchTvList(
   }
 }
 
+type Genre = { id: number; name: string }
+let cachedMovieGenres: Genre[] | null = null
+let cachedTvGenres: Genre[] | null = null
+
+async function fetchMovieGenres(): Promise<Genre[]> {
+  if (cachedMovieGenres) return cachedMovieGenres
+  const tmdb = getTMDB()
+  const res = await tmdb.genres.movie_list()
+  cachedMovieGenres = res.genres ?? []
+  return cachedMovieGenres
+}
+
+async function fetchTvGenres(): Promise<Genre[]> {
+  if (cachedTvGenres) return cachedTvGenres
+  const tmdb = getTMDB()
+  const res = await tmdb.genres.tv_list()
+  cachedTvGenres = res.genres ?? []
+  return cachedTvGenres
+}
+
+function getGenreNames(genreIds: number[], type: "movie" | "tv"): string[] {
+  const map = type === "movie" ? cachedMovieGenres : cachedTvGenres
+  if (!map) return []
+  return genreIds
+    .map((id) => map.find((g) => g.id === id)?.name)
+    .filter((n): n is string => Boolean(n))
+}
+
+const TMDB_BASE = "https://api.themoviedb.org/3"
+const cacheTvExternalIds = new Map<number, number | null>()
+
+async function fetchTvExternalIds(tmdbId: number): Promise<number | null> {
+  const cached = cacheTvExternalIds.get(tmdbId)
+  if (cached !== undefined) return cached
+  try {
+    const token = getAccessToken()
+    const res = await fetch(`${TMDB_BASE}/tv/${tmdbId}/external_ids`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) {
+      cacheTvExternalIds.set(tmdbId, null)
+      return null
+    }
+    const data = (await res.json()) as { tvdb_id?: number }
+    const tvdb = data.tvdb_id ?? null
+    cacheTvExternalIds.set(tmdbId, tvdb)
+    return tvdb
+  } catch {
+    cacheTvExternalIds.set(tmdbId, null)
+    return null
+  }
+}
+
 export {
   getImageConfig,
   getPosterUrl,
   getPosterUrlSync,
+  getBackdropUrlSync,
   fetchMovieList,
   fetchTvList,
+  fetchMovieGenres,
+  fetchTvGenres,
+  getGenreNames,
+  fetchTvExternalIds,
 }
 export type { MovieResultItem, TVSeriesResultItem, PaginatedResponse }

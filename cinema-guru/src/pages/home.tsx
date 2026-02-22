@@ -1,9 +1,10 @@
 import { useSearchParams } from "react-router-dom"
 import { Navbar } from "@/components/navigation/navbar"
 import { CarouselSection } from "@/components/carousel-section"
+import { HeroSection, type HeroItem } from "@/components/hero-section"
 import { PosterCard } from "@/components/poster-card"
 import { CarouselSkeletonRow } from "@/components/poster-card-skeleton"
-import { useImageConfig, useMovieList, useTvList } from "@/data/tmdb/hooks"
+import { useGenres, useImageConfig, useMovieList, useTvList } from "@/data/tmdb/hooks"
 import type { MovieCategory, TvCategory, ViewType } from "@/data/tmdb/types"
 
 const MOVIE_SECTION_TITLES: Record<MovieCategory, string> = {
@@ -24,6 +25,7 @@ function HomeContent() {
   const category = (searchParams.get("category") ?? "popular") as MovieCategory & TvCategory
 
   const imageConfig = useImageConfig()
+  const { getGenreNames } = useGenres()
   const movieCategory: MovieCategory = view === "movies" ? category : "popular"
   const tvCategory: TvCategory = view === "tv" ? category : "popular"
   const movieList = useMovieList(movieCategory)
@@ -38,19 +40,47 @@ function HomeContent() {
   const moviesViewItems = showMoviesView ? movieList.data?.results ?? [] : []
   const tvViewItems = showTvView ? tvList.data?.results ?? [] : []
 
+  const firstMovie = defaultMovies[0]
+  const firstTv = defaultTvShows[0]
+  const heroFeatured: HeroItem | null =
+    showDefaultView && (firstMovie ?? firstTv)
+      ? firstMovie
+        ? {
+            id: firstMovie.id,
+            mediaType: "movie",
+            title: firstMovie.title,
+            backdropPath: firstMovie.backdrop_path ?? null,
+          }
+        : firstTv
+          ? {
+              id: firstTv.id,
+              mediaType: "tv",
+              title: firstTv.name,
+              backdropPath: firstTv.backdrop_path ?? null,
+            }
+          : null
+      : null
+
   const defaultMoviesLoading = showDefaultView && (movieList.isLoading || !imageConfig.loaded)
   const defaultTvLoading = showDefaultView && (tvList.isLoading || !imageConfig.loaded)
   const moviesViewLoading = showMoviesView && (movieList.isLoading || !imageConfig.loaded)
   const tvViewLoading = showTvView && (tvList.isLoading || !imageConfig.loaded)
 
   return (
-    <div
-      key={`${view}-${category}`}
-      className="container mx-auto px-4 py-6 animate-in fade-in duration-200"
-    >
-      {showDefaultView && (
-        <>
-          <CarouselSection title="Popular movies">
+    <>
+      {showDefaultView && heroFeatured && (
+        <HeroSection
+          featured={heroFeatured}
+          getBackdropUrl={imageConfig.getBackdropUrl}
+        />
+      )}
+      <div
+        key={`${view}-${category}`}
+        className="container mx-auto px-4 py-6 animate-in fade-in duration-200"
+      >
+        {showDefaultView && (
+          <>
+            <CarouselSection title="Popular movies" fullBleedRight>
             {defaultMoviesLoading ? (
               <CarouselSkeletonRow count={6} />
             ) : (
@@ -60,11 +90,17 @@ function HomeContent() {
                   posterUrl={imageConfig.getPosterUrl(item.poster_path ?? null)}
                   title={item.title}
                   voteAverage={item.vote_average}
+                  id={item.id}
+                  mediaType="movie"
+                  releaseDate={item.release_date}
+                  genreIds={item.genre_ids}
+                  getGenreNames={getGenreNames}
+                  backdropUrl={imageConfig.getBackdropUrl(item.backdrop_path ?? null)}
                 />
               ))
             )}
           </CarouselSection>
-          <CarouselSection title="Popular TV" className="mt-10">
+          <CarouselSection title="Popular TV" className="mt-10" fullBleedRight>
             {defaultTvLoading ? (
               <CarouselSkeletonRow count={6} />
             ) : (
@@ -74,6 +110,12 @@ function HomeContent() {
                   posterUrl={imageConfig.getPosterUrl(item.poster_path ?? null)}
                   title={item.name}
                   voteAverage={item.vote_average}
+                  id={item.id}
+                  mediaType="tv"
+                  releaseDate={item.first_air_date}
+                  genreIds={item.genre_ids}
+                  getGenreNames={getGenreNames}
+                  backdropUrl={imageConfig.getBackdropUrl(item.backdrop_path ?? null)}
                 />
               ))
             )}
@@ -81,7 +123,7 @@ function HomeContent() {
         </>
       )}
       {showMoviesView && (
-        <CarouselSection title={MOVIE_SECTION_TITLES[category]}>
+        <CarouselSection title={MOVIE_SECTION_TITLES[category]} fullBleedRight>
           {moviesViewLoading ? (
             <CarouselSkeletonRow count={6} />
           ) : (
@@ -91,13 +133,19 @@ function HomeContent() {
                 posterUrl={imageConfig.getPosterUrl(item.poster_path ?? null)}
                 title={item.title}
                 voteAverage={item.vote_average}
+                id={item.id}
+                mediaType="movie"
+                releaseDate={item.release_date}
+                genreIds={item.genre_ids}
+                getGenreNames={getGenreNames}
+                backdropUrl={imageConfig.getBackdropUrl(item.backdrop_path ?? null)}
               />
             ))
           )}
         </CarouselSection>
       )}
       {showTvView && (
-        <CarouselSection title={TV_SECTION_TITLES[category]}>
+        <CarouselSection title={TV_SECTION_TITLES[category]} fullBleedRight>
           {tvViewLoading ? (
             <CarouselSkeletonRow count={6} />
           ) : (
@@ -107,12 +155,19 @@ function HomeContent() {
                 posterUrl={imageConfig.getPosterUrl(item.poster_path ?? null)}
                 title={item.name}
                 voteAverage={item.vote_average}
+                id={item.id}
+                mediaType="tv"
+                releaseDate={item.first_air_date}
+                genreIds={item.genre_ids}
+                getGenreNames={getGenreNames}
+                backdropUrl={imageConfig.getBackdropUrl(item.backdrop_path ?? null)}
               />
             ))
           )}
         </CarouselSection>
       )}
-    </div>
+      </div>
+    </>
   )
 }
 

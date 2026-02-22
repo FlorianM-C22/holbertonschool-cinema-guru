@@ -2,15 +2,17 @@ import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const SCROLL_OFFSET_PX = 320
+const SCROLL_OFFSET_PX = 380
 
 type CarouselSectionProps = {
   title: string
   children: React.ReactNode
   className?: string
+  /** When true, the scroll area extends to the right into the container padding (e.g. -mr-4). */
+  fullBleedRight?: boolean
 }
 
-function CarouselSection({ title, children, className }: CarouselSectionProps) {
+function CarouselSection({ title, children, className, fullBleedRight }: CarouselSectionProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [showArrows, setShowArrows] = React.useState(false)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
@@ -47,7 +49,11 @@ function CarouselSection({ title, children, className }: CarouselSectionProps) {
 
   return (
     <section
-      className={cn("group/carousel relative w-full", className)}
+      className={cn(
+        "group/carousel relative w-full",
+        fullBleedRight && "mr-[-1rem]",
+        className,
+      )}
       onMouseEnter={() => setShowArrows(true)}
       onMouseLeave={() => setShowArrows(false)}
     >
@@ -55,7 +61,7 @@ function CarouselSection({ title, children, className }: CarouselSectionProps) {
       <div className="relative">
         <div
           ref={scrollRef}
-          className="carousel-scroll flex gap-4 pb-2 scroll-smooth"
+          className="carousel-scroll flex gap-4 pb-2 pl-6 scroll-smooth"
         >
           {children}
         </div>

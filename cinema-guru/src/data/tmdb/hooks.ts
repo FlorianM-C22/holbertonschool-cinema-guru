@@ -20,11 +20,18 @@ type ImageConfigState = {
   error: Error | null
 }
 
-function useImageConfig(): ImageConfigState & { getPosterUrl: (path: string | null | undefined) => string | null } {
+function useImageConfig(): ImageConfigState & {
+  getPosterUrl: (path: string | null | undefined) => string | null
+  getBackdropUrl: (path: string | null | undefined) => string | null
+} {
   const [state, setState] = useState<ImageConfigState>({ loaded: false, error: null })
 
   const getPosterUrl = useCallback((posterPath: string | null | undefined): string | null => {
     return tmdbApi.getPosterUrlSync(posterPath)
+  }, [])
+
+  const getBackdropUrl = useCallback((backdropPath: string | null | undefined): string | null => {
+    return tmdbApi.getBackdropUrlSync(backdropPath)
   }, [])
 
   useEffect(() => {
@@ -42,7 +49,7 @@ function useImageConfig(): ImageConfigState & { getPosterUrl: (path: string | nu
     }
   }, [])
 
-  return { ...state, getPosterUrl }
+  return { ...state, getPosterUrl, getBackdropUrl }
 }
 
 function useMovieList(category: MovieCategory): MovieListState {
@@ -111,4 +118,32 @@ function useTvList(category: TvCategory): TvListState {
   return state
 }
 
-export { useImageConfig, useMovieList, useTvList }
+function useGenres(): {
+  getGenreNames: (genreIds: number[], type: "movie" | "tv") => string[]
+  loaded: boolean
+} {
+  const [loaded, setLoaded] = useState(false)
+
+  const getGenreNames = useCallback((genreIds: number[], type: "movie" | "tv") => {
+    return tmdbApi.getGenreNames(genreIds, type)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([tmdbApi.fetchMovieGenres(), tmdbApi.fetchTvGenres()]).then(
+      () => {
+        if (!cancelled) setLoaded(true)
+      },
+      () => {
+        if (!cancelled) setLoaded(true)
+      }
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return { getGenreNames, loaded }
+}
+
+export { useImageConfig, useMovieList, useTvList, useGenres }

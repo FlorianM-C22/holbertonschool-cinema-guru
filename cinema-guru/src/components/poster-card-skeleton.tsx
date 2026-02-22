@@ -5,10 +5,8 @@ const POSTER_ASPECT_RATIO = "aspect-[2/3]"
 
 function PosterCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("flex w-[10rem] shrink-0 flex-col gap-2", className)}>
+    <div className={cn("flex w-[14rem] shrink-0 flex-col gap-2", className)}>
       <Skeleton className={cn("w-full rounded-lg", POSTER_ASPECT_RATIO)} />
-      <Skeleton className="h-4 w-full rounded" />
-      <Skeleton className="h-4 w-3/4 rounded" />
     </div>
   )
 }
