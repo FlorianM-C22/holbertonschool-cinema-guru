@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Eye, EyeOff } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +19,20 @@ import { cn } from "@/lib/utils"
 
 type AuthMode = "login" | "signup"
 
+const AUTH_ERROR_KEYS = [
+  "emailRequired",
+  "passwordRequired",
+  "passwordMinLength",
+  "passwordsNoMatch",
+  "generic",
+] as const
+
+type AuthErrorKey = (typeof AUTH_ERROR_KEYS)[number]
+
+function isAuthErrorKey(key: string): key is AuthErrorKey {
+  return AUTH_ERROR_KEYS.includes(key as AuthErrorKey)
+}
+
 type AuthFormProps = {
   onSuccess?: () => void
 }
@@ -26,6 +41,7 @@ const inputClassName =
   "h-12 rounded-xl border px-4 text-base transition-[color,box-shadow]"
 
 function AuthForm({ onSuccess }: AuthFormProps) {
+  const { t } = useTranslation()
   const [mode, setMode] = useState<AuthMode>("login")
   const [login, setLogin] = useState("")
   const [password, setPassword] = useState("")
@@ -45,20 +61,20 @@ function AuthForm({ onSuccess }: AuthFormProps) {
     const passwordTrimmed = password.trim()
 
     if (!loginTrimmed) {
-      setError("Email or username is required.")
+      setError("emailRequired")
       return
     }
     if (!passwordTrimmed) {
-      setError("Password is required.")
+      setError("passwordRequired")
       return
     }
     if (isSignup) {
       if (passwordTrimmed.length < 8) {
-        setError("Password must be at least 8 characters.")
+        setError("passwordMinLength")
         return
       }
       if (passwordTrimmed !== confirmPassword.trim()) {
-        setError("Passwords do not match.")
+        setError("passwordsNoMatch")
         return
       }
     }
@@ -76,7 +92,7 @@ function AuthForm({ onSuccess }: AuthFormProps) {
       }
       onSuccess?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.")
+      setError(err instanceof Error ? err.message : "generic")
     } finally {
       setIsLoading(false)
     }
@@ -91,25 +107,23 @@ function AuthForm({ onSuccess }: AuthFormProps) {
     <Card className="w-full max-w-[440px] border-border/80 bg-card/80 px-8 py-8 shadow-xl backdrop-blur-xl sm:px-10 sm:py-10">
       <CardHeader className="px-0 pb-2 pt-0">
         <CardTitle className="text-2xl tracking-tight">
-          {isSignup ? "Create account" : "Log in"}
+          {isSignup ? t("auth.titleSignup") : t("auth.titleLogin")}
         </CardTitle>
         <CardDescription className="mt-1.5 text-base">
-          {isSignup
-            ? "Sign up to save your watchlist and preferences."
-            : "Enter your credentials to continue."}
+          {isSignup ? t("auth.descSignup") : t("auth.descLogin")}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="flex flex-col gap-6 px-0 pb-0 pt-6">
           <div className="flex flex-col gap-3">
             <Label htmlFor="auth-login" className="text-base font-medium">
-              Email or username
+              {t("auth.emailOrUsername")}
             </Label>
             <Input
               id="auth-login"
               type="text"
               autoComplete={isSignup ? "username" : "username email"}
-              placeholder="you@example.com"
+              placeholder={t("auth.placeholderEmail")}
               value={login}
               onChange={(e) => setLogin(e.target.value)}
               disabled={isLoading}
@@ -119,14 +133,14 @@ function AuthForm({ onSuccess }: AuthFormProps) {
           </div>
           <div className="flex flex-col gap-3">
             <Label htmlFor="auth-password" className="text-base font-medium">
-              Password
+              {t("auth.password")}
             </Label>
             <div className="relative">
               <Input
                 id="auth-password"
                 type={showPassword ? "text" : "password"}
                 autoComplete={isSignup ? "new-password" : "current-password"}
-                placeholder="••••••••"
+                placeholder={t("auth.placeholderPassword")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -138,7 +152,11 @@ function AuthForm({ onSuccess }: AuthFormProps) {
                 onClick={() => setShowPassword((v) => !v)}
                 disabled={isLoading}
                 className="text-primary/80 hover:text-primary absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword
+                    ? t("auth.aria.hidePassword")
+                    : t("auth.aria.showPassword")
+                }
                 tabIndex={-1}
               >
                 {showPassword ? (
@@ -155,14 +173,14 @@ function AuthForm({ onSuccess }: AuthFormProps) {
                 htmlFor="auth-confirm-password"
                 className="text-base font-medium"
               >
-                Confirm password
+                {t("auth.confirmPassword")}
               </Label>
               <div className="relative">
                 <Input
                   id="auth-confirm-password"
                   type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  placeholder="••••••••"
+                  placeholder={t("auth.placeholderPassword")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={isLoading}
@@ -175,7 +193,9 @@ function AuthForm({ onSuccess }: AuthFormProps) {
                   disabled={isLoading}
                   className="text-primary/80 hover:text-primary absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
+                    showConfirmPassword
+                      ? t("auth.aria.hidePassword")
+                      : t("auth.aria.showPassword")
                   }
                   tabIndex={-1}
                 >
@@ -190,7 +210,7 @@ function AuthForm({ onSuccess }: AuthFormProps) {
           )}
           {error && (
             <p className="text-destructive text-sm" role="alert">
-              {error}
+              {isAuthErrorKey(error) ? t(`auth.error.${error}`) : error}
             </p>
           )}
         </CardContent>
@@ -201,31 +221,35 @@ function AuthForm({ onSuccess }: AuthFormProps) {
             size="lg"
             className="w-full rounded-xl px-6"
           >
-            {isLoading ? "Please wait…" : isSignup ? "Create account" : "Log in"}
+            {isLoading
+              ? t("auth.submitWait")
+              : isSignup
+                ? t("auth.submitSignup")
+                : t("auth.submitLogin")}
           </Button>
           <p className="text-muted-foreground text-center text-sm">
             {isSignup ? (
               <>
-                Already have an account?{" "}
+                {t("auth.alreadyHaveAccount")}{" "}
                 <button
                   type="button"
                   onClick={switchMode}
                   disabled={isLoading}
                   className="text-foreground font-medium underline-offset-4 hover:underline"
                 >
-                  Log in
+                  {t("auth.switchToLogin")}
                 </button>
               </>
             ) : (
               <>
-                New here?{" "}
+                {t("auth.newHere")}{" "}
                 <button
                   type="button"
                   onClick={switchMode}
                   disabled={isLoading}
                   className="text-foreground font-medium underline-offset-4 hover:underline"
                 >
-                  Create an account
+                  {t("auth.switchToSignup")}
                 </button>
               </>
             )}

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { Search } from "lucide-react"
 
 import {
@@ -9,18 +10,18 @@ import {
 } from "@/components/ui/input-group"
 import { cn } from "@/lib/utils"
 
-const SEARCH_PLACEHOLDER = "Search for a movie..."
-
 interface SearchBarProps extends React.ComponentProps<"input"> {
   onSearch?: (value: string) => void
 }
 
 function SearchBar({
   className,
-  placeholder = SEARCH_PLACEHOLDER,
+  placeholder,
   onSearch,
   ...props
 }: SearchBarProps) {
+  const { t } = useTranslation()
+  const resolvedPlaceholder = placeholder ?? t("search.placeholder")
   const [value, setValue] = React.useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -38,7 +39,7 @@ function SearchBar({
       >
         <InputGroupInput
           type="search"
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           className="placeholder:text-neutral-500"
           {...props}
           value={value}
@@ -56,7 +57,7 @@ function SearchBar({
               "hover:bg-[#333] focus-visible:ring-[#222] focus-visible:ring-offset-0"
             )}
           >
-            Search
+            {t("search.button")}
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>

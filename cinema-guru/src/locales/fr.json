@@ -1,0 +1,55 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "movies": "Films",
+    "tvShows": "Séries",
+    "favourites": "Favoris",
+    "watchLater": "À regarder",
+    "logOut": "Déconnexion",
+    "language": "Langue",
+    "langFr": "Français",
+    "langEn": "English",
+    "categories": {
+      "popular": "Populaires",
+      "upcoming": "À venir",
+      "top_rated": "Mieux notés"
+    },
+    "aria": {
+      "home": "Accueil",
+      "toggleSearch": "Ouvrir la recherche"
+    }
+  },
+  "auth": {
+    "titleLogin": "Connexion",
+    "titleSignup": "Créer un compte",
+    "descLogin": "Entrez vos identifiants pour continuer.",
+    "descSignup": "Inscrivez-vous pour enregistrer votre liste et vos préférences.",
+    "emailOrUsername": "E-mail ou nom d'utilisateur",
+    "placeholderEmail": "vous@exemple.com",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "placeholderPassword": "••••••••",
+    "aria": {
+      "showPassword": "Afficher le mot de passe",
+      "hidePassword": "Masquer le mot de passe"
+    },
+    "error": {
+      "emailRequired": "L'e-mail ou le nom d'utilisateur est requis.",
+      "passwordRequired": "Le mot de passe est requis.",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères.",
+      "passwordsNoMatch": "Les mots de passe ne correspondent pas.",
+      "generic": "Une erreur s'est produite."
+    },
+    "submitWait": "Veuillez patienter…",
+    "submitLogin": "Connexion",
+    "submitSignup": "Créer un compte",
+    "alreadyHaveAccount": "Déjà un compte ?",
+    "newHere": "Nouveau ici ?",
+    "switchToLogin": "Connexion",
+    "switchToSignup": "Créer un compte"
+  },
+  "search": {
+    "placeholder": "Rechercher un film…",
+    "button": "Rechercher"
+  }
+}

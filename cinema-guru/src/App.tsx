@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { useAuth } from "@/data/auth/context"
 import { AuthForm } from "./components/auth/auth-form"
 import { Home } from "./pages/home"
-import { ProtectedRoute } from "./components/protected-route"
+import { ProtectedRoute } from "./components/auth/protected-route"
 import loginBg from "./assets/login-bg.jpg"
 
 
