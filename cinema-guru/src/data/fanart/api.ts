@@ -30,14 +30,13 @@ function buildFanartUrl(path: string, apiKey: string): string {
   const clientKey = getClientKey()
   const params = new URLSearchParams({ api_key: apiKey })
   if (clientKey) params.set("client_key", clientKey)
-  const base =
-    import.meta.env.DEV && typeof window !== "undefined"
-      ? "/fanart-api"
-      : FANART_ORIGIN
+  const base = typeof window !== "undefined" ? "/fanart-api" : FANART_ORIGIN
   return `${base}${path}?${params.toString()}`
 }
 
-function pickBestUrl(items: { url: string; likes: string }[] | undefined): string | null {
+function pickBestUrl(
+  items: { url: string; likes: string }[] | undefined,
+): string | null {
   if (!items?.length) return null
   const sorted = [...items].sort((a, b) => Number(b.likes) - Number(a.likes))
   return sorted[0]?.url ?? null

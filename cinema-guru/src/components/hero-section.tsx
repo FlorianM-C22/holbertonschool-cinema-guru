@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react"
-import { Play, Info, ChevronLeft, ChevronRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { Info, Heart, Clock, ChevronLeft, ChevronRight } from "lucide-react"
 import * as fanartApi from "@/data/fanart/api"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -21,6 +22,7 @@ type HeroSectionProps = {
 type SlideArt = { backgroundUrl: string | null; logoUrl: string | null }
 
 export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
+  const { t } = useTranslation()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [slideArts, setSlideArts] = useState<SlideArt[]>([])
   const [showArrows, setShowArrows] = useState(false)
@@ -194,18 +196,32 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
             </h2>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button size="lg" className="gap-2" aria-label="Play">
-              <Play className="h-5 w-5" aria-hidden />
-              Play
+            <Button
+              size="lg"
+              variant="default"
+              className="gap-2 bg-white/20 text-white hover:bg-white/30"
+              aria-label={t("hero.info")}
+            >
+              <Info className="h-5 w-5" aria-hidden />
+              {t("hero.info")}
             </Button>
             <Button
               size="lg"
-              variant="secondary"
+              variant="default"
               className="gap-2 bg-white/20 text-white hover:bg-white/30"
-              aria-label="More info"
+              aria-label={t("hero.addToFavourites")}
             >
-              <Info className="h-5 w-5" aria-hidden />
-              Info
+              <Heart className="h-5 w-5" aria-hidden />
+              {t("hero.addToFavourites")}
+            </Button>
+            <Button
+              size="lg"
+              variant="default"
+              className="gap-2 bg-white/20 text-white hover:bg-white/30"
+              aria-label={t("hero.watchLater")}
+            >
+              <Clock className="h-5 w-5" aria-hidden />
+              {t("hero.watchLater")}
             </Button>
           </div>
         </div>

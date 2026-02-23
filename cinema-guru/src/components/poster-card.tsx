@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Info, Play, Plus } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { Info, Heart, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import * as fanartApi from "@/data/fanart/api"
 
@@ -12,7 +13,6 @@ type PosterCardProps = {
   releaseDate?: string
   genreIds?: number[]
   getGenreNames?: (genreIds: number[], type: "movie" | "tv") => string[]
-  /** TMDB backdrop URL for the expanded view background (fallback when Fanart has no background). */
   backdropUrl?: string | null
   className?: string
 }
@@ -33,9 +33,12 @@ function PosterCard({
   backdropUrl: backdropUrlProp,
   className,
 }: PosterCardProps) {
+  const { t } = useTranslation()
   const [isHovered, setIsHovered] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
-  const [fanartBackgroundUrl, setFanartBackgroundUrl] = useState<string | null>(null)
+  const [fanartBackgroundUrl, setFanartBackgroundUrl] = useState<string | null>(
+    null,
+  )
   const hasFetchedArt = useRef(false)
 
   const fetchArt = useCallback(() => {
@@ -59,8 +62,10 @@ function PosterCard({
   }, [isHovered, fetchArt])
 
   const year = releaseDate ? releaseDate.slice(0, 4) : null
-  const genreNames = getGenreNames?.(genreIds, mediaType).slice(0, 2).join(", ") ?? ""
-  const expandedBackgroundUrl = fanartBackgroundUrl ?? backdropUrlProp ?? posterUrl
+  const genreNames =
+    getGenreNames?.(genreIds, mediaType).slice(0, 2).join(", ") ?? ""
+  const expandedBackgroundUrl =
+    fanartBackgroundUrl ?? backdropUrlProp ?? posterUrl
 
   return (
     <article
@@ -82,7 +87,6 @@ function PosterCard({
       aria-expanded={isHovered}
       aria-label={title}
     >
-      {/* État plié : poster seul + badge note */}
       {!isHovered && (
         <div className="relative h-full w-full overflow-hidden rounded-lg bg-muted shadow-md">
           {posterUrl ? (
@@ -105,13 +109,14 @@ function PosterCard({
         </div>
       )}
 
-      {/* État déplié : un seul fond artwork (Fanart → backdrop → poster) + overlay + logo/boutons/métadonnées */}
       {isHovered && (
         <div className="relative h-full w-full overflow-hidden rounded-lg shadow-xl">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: expandedBackgroundUrl ? `url(${expandedBackgroundUrl})` : undefined,
+              backgroundImage: expandedBackgroundUrl
+                ? `url(${expandedBackgroundUrl})`
+                : undefined,
               backgroundColor: "hsl(var(--background))",
             }}
           />
@@ -135,25 +140,24 @@ function PosterCard({
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  className="flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition-opacity hover:opacity-90"
-                  aria-label="Play"
-                >
-                  <Play className="h-4 w-4 fill-current" />
-                  {mediaType === "tv" ? "Lire S. 1 Ép. 1" : "Lire"}
-                </button>
-                <button
-                  type="button"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
-                  aria-label="Add to list"
-                >
-                  <Plus className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
-                  aria-label="More info"
+                  aria-label={t("hero.info")}
                 >
                   <Info className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
+                  aria-label={t("hero.addToFavourites")}
+                >
+                  <Heart className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
+                  aria-label={t("hero.watchLater")}
+                >
+                  <Clock className="h-5 w-5" />
                 </button>
               </div>
               <p className="text-xs text-white/90">

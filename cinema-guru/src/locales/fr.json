@@ -1,4 +1,9 @@
 {
+  "hero": {
+    "info": "Info",
+    "addToFavourites": "Ajouter aux favoris",
+    "watchLater": "À regarder"
+  },
   "nav": {
     "home": "Accueil",
     "movies": "Films",
