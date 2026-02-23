@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { useAuth } from "@/data/auth/context"
 import { AuthForm } from "./components/auth/auth-form"
 import { Home } from "./pages/home"
+import { Favorites } from "./pages/favorites"
+import { WatchLater } from "./pages/watch-later"
 import { ProtectedRoute } from "./components/auth/protected-route"
 import loginBg from "./assets/login-bg.jpg"
 
@@ -40,6 +42,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <Favorites />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/watch-later"
+          element={
+            <ProtectedRoute>
+              <WatchLater />
             </ProtectedRoute>
           }
         />

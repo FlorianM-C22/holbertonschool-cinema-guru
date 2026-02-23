@@ -8,6 +8,7 @@ const tmdbRouter = require('./routes/tmdb')
 const fanartRouter = require('./routes/fanart')
 const meRouter = require('./routes/me')
 require('./models/UserListEntry')
+require('./models/UserActivity')
 require('dotenv').config()
 
 const app = express();

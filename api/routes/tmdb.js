@@ -58,6 +58,28 @@ router.get('/genres/tv', async (req, res, next) => {
     }
 })
 
+router.get('/movies/:tmdbId/detail', async (req, res, next) => {
+    try {
+        const tmdbId = parseInt(req.params.tmdbId, 10)
+        if (isNaN(tmdbId)) return next(Object.assign(new Error('Invalid tmdbId'), { statusCode: 400 }))
+        const data = await tmdbService.getMovieDetail(tmdbId)
+        res.json(data)
+    } catch (err) {
+        next(err)
+    }
+})
+
+router.get('/tv/:tmdbId/detail', async (req, res, next) => {
+    try {
+        const tmdbId = parseInt(req.params.tmdbId, 10)
+        if (isNaN(tmdbId)) return next(Object.assign(new Error('Invalid tmdbId'), { statusCode: 400 }))
+        const data = await tmdbService.getTvDetail(tmdbId)
+        res.json(data)
+    } catch (err) {
+        next(err)
+    }
+})
+
 router.get('/tv/:tmdbId/external_ids', async (req, res, next) => {
     try {
         const tvdbId = await tmdbService.getTvExternalIds(req.params.tmdbId)

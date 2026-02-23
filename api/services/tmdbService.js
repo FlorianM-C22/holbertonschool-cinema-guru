@@ -55,6 +55,14 @@ async function getTvGenres() {
     return cache.tvGenres
 }
 
+async function getMovieDetail(tmdbId) {
+    return request(`/movie/${tmdbId}`)
+}
+
+async function getTvDetail(tmdbId) {
+    return request(`/tv/${tmdbId}`)
+}
+
 async function getTvExternalIds(tmdbId) {
     const id = parseInt(tmdbId, 10)
     if (cache.externalIds.has(id)) return cache.externalIds.get(id)
@@ -75,5 +83,7 @@ module.exports = {
     getTvList,
     getMovieGenres,
     getTvGenres,
+    getMovieDetail,
+    getTvDetail,
     getTvExternalIds,
 }

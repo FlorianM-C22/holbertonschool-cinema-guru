@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Info, Heart, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import * as fanartApi from "@/data/fanart/api"
-import * as listsApi from "@/data/lists/api"
+import { useLists } from "@/data/lists/context"
 
 type PosterCardProps = {
   posterUrl: string | null
@@ -35,6 +35,7 @@ function PosterCard({
   className,
 }: PosterCardProps) {
   const { t } = useTranslation()
+  const { isFavorite, isWatchLater, toggleFavorite, toggleWatchLater } = useLists()
   const [isHovered, setIsHovered] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [fanartBackgroundUrl, setFanartBackgroundUrl] = useState<string | null>(
@@ -148,17 +149,27 @@ function PosterCard({
                 </button>
                 <button
                   type="button"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-white transition-colors hover:bg-white/20",
+                    isFavorite(id, mediaType)
+                      ? "border-red-400 bg-red-500/80 fill-current"
+                      : "border-white/80 bg-transparent",
+                  )}
                   aria-label={t("hero.addToFavourites")}
-                  onClick={() => listsApi.addFavorite(id, mediaType).catch(() => {})}
+                  onClick={() => toggleFavorite(id, mediaType).catch(() => {})}
                 >
                   <Heart className="h-5 w-5" />
                 </button>
                 <button
                   type="button"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-white transition-colors hover:bg-white/20",
+                    isWatchLater(id, mediaType)
+                      ? "border-primary bg-primary/50"
+                      : "border-white/80 bg-transparent",
+                  )}
                   aria-label={t("hero.watchLater")}
-                  onClick={() => listsApi.addWatchLater(id, mediaType).catch(() => {})}
+                  onClick={() => toggleWatchLater(id, mediaType).catch(() => {})}
                 >
                   <Clock className="h-5 w-5" />
                 </button>

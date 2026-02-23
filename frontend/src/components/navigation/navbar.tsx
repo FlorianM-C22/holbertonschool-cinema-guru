@@ -177,13 +177,13 @@ function Navbar() {
               aria-hidden
             />
             <Link
-              to="/home"
+              to="/favorites"
               className="text-sm font-medium text-foreground/90 transition-colors hover:text-foreground"
             >
               {t("nav.favourites")}
             </Link>
             <Link
-              to="/home"
+              to="/watch-later"
               className="text-sm font-medium text-foreground/90 transition-colors hover:text-foreground"
             >
               {t("nav.watchLater")}

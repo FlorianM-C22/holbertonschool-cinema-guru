@@ -93,6 +93,14 @@ function getGenreNames(genreIds: number[], type: "movie" | "tv"): string[] {
 
 const cacheTvExternalIds = new Map<number, number | null>()
 
+async function fetchMovieDetail(tmdbId: number) {
+  return apiGet<MovieResultItem>(`/tmdb/movies/${tmdbId}/detail`)
+}
+
+async function fetchTvDetail(tmdbId: number) {
+  return apiGet<TVSeriesResultItem>(`/tmdb/tv/${tmdbId}/detail`)
+}
+
 async function fetchTvExternalIds(tmdbId: number): Promise<number | null> {
   const cached = cacheTvExternalIds.get(tmdbId)
   if (cached !== undefined) return cached
@@ -114,6 +122,8 @@ export {
   getBackdropUrlSync,
   fetchMovieList,
   fetchTvList,
+  fetchMovieDetail,
+  fetchTvDetail,
   fetchMovieGenres,
   fetchTvGenres,
   getGenreNames,

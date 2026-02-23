@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Info, Heart, Clock, ChevronLeft, ChevronRight } from "lucide-react"
 import * as fanartApi from "@/data/fanart/api"
-import * as listsApi from "@/data/lists/api"
+import { useLists } from "@/data/lists/context"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -24,6 +24,7 @@ type SlideArt = { backgroundUrl: string | null; logoUrl: string | null }
 
 export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
   const { t } = useTranslation()
+  const { isFavorite, isWatchLater, toggleFavorite, toggleWatchLater } = useLists()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [slideArts, setSlideArts] = useState<SlideArt[]>([])
   const [showArrows, setShowArrows] = useState(false)
@@ -209,19 +210,41 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
             <Button
               size="lg"
               variant="default"
-              className="gap-2 bg-white/20 text-white hover:bg-white/30"
+              className={cn(
+                "gap-2 text-white hover:bg-white/30",
+                current && isFavorite(current.id, current.mediaType)
+                  ? "bg-red-500/80"
+                  : "bg-white/20",
+              )}
               aria-label={t("hero.addToFavourites")}
-              onClick={() => current && listsApi.addFavorite(current.id, current.mediaType).catch(() => {})}
+              onClick={() =>
+                current &&
+                toggleFavorite(current.id, current.mediaType).catch(() => {})
+              }
             >
-              <Heart className="h-5 w-5" aria-hidden />
+              <Heart
+                className={cn(
+                  "h-5 w-5",
+                  current && isFavorite(current.id, current.mediaType) && "fill-current",
+                )}
+                aria-hidden
+              />
               {t("hero.addToFavourites")}
             </Button>
             <Button
               size="lg"
               variant="default"
-              className="gap-2 bg-white/20 text-white hover:bg-white/30"
+              className={cn(
+                "gap-2 text-white hover:bg-white/30",
+                current && isWatchLater(current.id, current.mediaType)
+                  ? "border-2 border-primary bg-primary/50"
+                  : "bg-white/20",
+              )}
               aria-label={t("hero.watchLater")}
-              onClick={() => current && listsApi.addWatchLater(current.id, current.mediaType).catch(() => {})}
+              onClick={() =>
+                current &&
+                toggleWatchLater(current.id, current.mediaType).catch(() => {})
+              }
             >
               <Clock className="h-5 w-5" aria-hidden />
               {t("hero.watchLater")}

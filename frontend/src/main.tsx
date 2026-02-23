@@ -4,11 +4,14 @@ import { createRoot } from "react-dom/client"
 import "./index.css"
 import App from './App.tsx'
 import { AuthProvider } from './data/auth/context'
+import { ListsProvider } from './data/lists/context'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <App />
+      <ListsProvider>
+        <App />
+      </ListsProvider>
     </AuthProvider>
   </StrictMode>,
 )
