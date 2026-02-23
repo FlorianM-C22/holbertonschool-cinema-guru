@@ -22,7 +22,7 @@
   "auth": {
     "titleLogin": "Log in",
     "titleSignup": "Create account",
-    "descLogin": "Enter your credentials to continue.",
+    "descLogin": "Welcome back !",
     "descSignup": "Sign up to save your watchlist and preferences.",
     "emailOrUsername": "Email or username",
     "placeholderEmail": "you@example.com",

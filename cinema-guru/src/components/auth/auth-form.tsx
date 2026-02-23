@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Eye, EyeOff } from "lucide-react"
+import logo from "@/assets/logo.png"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -106,10 +107,17 @@ function AuthForm({ onSuccess }: AuthFormProps) {
   return (
     <Card className="w-full max-w-[440px] border-border/80 bg-card/80 px-8 py-8 shadow-xl backdrop-blur-xl sm:px-10 sm:py-10">
       <CardHeader className="px-0 pb-2 pt-0">
-        <CardTitle className="text-2xl tracking-tight">
+        <CardTitle
+          key={mode}
+          className="text-2xl tracking-tight animate-in fade-in-0 duration-200"
+        >
+          <img src={logo} alt="logo" className="w-auto h-auto mb-10" />
           {isSignup ? t("auth.titleSignup") : t("auth.titleLogin")}
         </CardTitle>
-        <CardDescription className="mt-1.5 text-base">
+        <CardDescription
+          key={`${mode}-desc`}
+          className="mt-1.5 text-base animate-in fade-in-0 duration-200 slide-in-from-top-1"
+        >
           {isSignup ? t("auth.descSignup") : t("auth.descLogin")}
         </CardDescription>
       </CardHeader>
@@ -167,8 +175,14 @@ function AuthForm({ onSuccess }: AuthFormProps) {
               </button>
             </div>
           </div>
-          {isSignup && (
-            <div className="flex flex-col gap-3">
+          <div
+            className={cn(
+              "grid transition-[grid-template-rows] duration-300 ease-out",
+              isSignup ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+            )}
+            aria-hidden={!isSignup}
+          >
+            <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
               <Label
                 htmlFor="auth-confirm-password"
                 className="text-base font-medium"
@@ -207,7 +221,7 @@ function AuthForm({ onSuccess }: AuthFormProps) {
                 </button>
               </div>
             </div>
-          )}
+          </div>
           {error && (
             <p className="text-destructive text-sm" role="alert">
               {isAuthErrorKey(error) ? t(`auth.error.${error}`) : error}
@@ -227,7 +241,10 @@ function AuthForm({ onSuccess }: AuthFormProps) {
                 ? t("auth.submitSignup")
                 : t("auth.submitLogin")}
           </Button>
-          <p className="text-muted-foreground text-center text-sm">
+          <p
+            key={`footer-${mode}`}
+            className="text-muted-foreground animate-in fade-in-0 text-center text-sm duration-200"
+          >
             {isSignup ? (
               <>
                 {t("auth.alreadyHaveAccount")}{" "}

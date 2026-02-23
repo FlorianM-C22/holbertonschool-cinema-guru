@@ -40,26 +40,22 @@ function HomeContent() {
   const moviesViewItems = showMoviesView ? movieList.data?.results ?? [] : []
   const tvViewItems = showTvView ? tvList.data?.results ?? [] : []
 
-  const firstMovie = defaultMovies[0]
-  const firstTv = defaultTvShows[0]
-  const heroFeatured: HeroItem | null =
-    showDefaultView && (firstMovie ?? firstTv)
-      ? firstMovie
-        ? {
-            id: firstMovie.id,
-            mediaType: "movie",
-            title: firstMovie.title,
-            backdropPath: firstMovie.backdrop_path ?? null,
-          }
-        : firstTv
-          ? {
-              id: firstTv.id,
-              mediaType: "tv",
-              title: firstTv.name,
-              backdropPath: firstTv.backdrop_path ?? null,
-            }
-          : null
-      : null
+  const heroItems: HeroItem[] = showDefaultView
+    ? [
+        ...defaultMovies.slice(0, 3).map((m) => ({
+          id: m.id,
+          mediaType: "movie" as const,
+          title: m.title,
+          backdropPath: m.backdrop_path ?? null,
+        })),
+        ...defaultTvShows.slice(0, 2).map((t) => ({
+          id: t.id,
+          mediaType: "tv" as const,
+          title: t.name,
+          backdropPath: t.backdrop_path ?? null,
+        })),
+      ]
+    : []
 
   const defaultMoviesLoading = showDefaultView && (movieList.isLoading || !imageConfig.loaded)
   const defaultTvLoading = showDefaultView && (tvList.isLoading || !imageConfig.loaded)
@@ -68,9 +64,9 @@ function HomeContent() {
 
   return (
     <>
-      {showDefaultView && heroFeatured && (
+      {showDefaultView && heroItems.length > 0 && (
         <HeroSection
-          featured={heroFeatured}
+          featured={heroItems}
           getBackdropUrl={imageConfig.getBackdropUrl}
         />
       )}

@@ -22,8 +22,8 @@
   "auth": {
     "titleLogin": "Connexion",
     "titleSignup": "Créer un compte",
-    "descLogin": "Entrez vos identifiants pour continuer.",
-    "descSignup": "Inscrivez-vous pour enregistrer votre liste et vos préférences.",
+    "descLogin": "Bon retour parmis nous !",
+    "descSignup": "Inscrivez-vous et commencez à faire votre watchlist.",
     "emailOrUsername": "E-mail ou nom d'utilisateur",
     "placeholderEmail": "vous@exemple.com",
     "password": "Mot de passe",
