@@ -1,12 +1,8 @@
 services:
   frontend:
     build:
-      context: ./cinema-guru
+      context: ./frontend
       dockerfile: Dockerfile
-      args:
-        VITE_TMDB_ACCESS_TOKEN: ${VITE_TMDB_ACCESS_TOKEN}
-        VITE_FANART_TV_API_KEY: ${VITE_FANART_TV_API_KEY}
-        VITE_FANART_TV_CLIENT_KEY: ${VITE_FANART_TV_CLIENT_KEY:-}
     ports:
       - "3000:3000"
     depends_on:
@@ -14,7 +10,7 @@ services:
 
   backend:
     build:
-      context: ./holbertonschool-cinema-guru-API
+      context: ./api
       dockerfile: Dockerfile
     environment:
       DB_SCHEMA: postgres
@@ -22,6 +18,9 @@ services:
       DB_PASSWORD: postgres
       DB_HOST: postgres
       PORT: 8000
+      TMDB_ACCESS_TOKEN: ${VITE_TMDB_ACCESS_TOKEN}
+      FANART_TV_API_KEY: ${VITE_FANART_TV_API_KEY}
+      FANART_TV_CLIENT_KEY: ${VITE_FANART_TV_CLIENT_KEY:-}
     ports:
       - "8000:8000"
     depends_on:

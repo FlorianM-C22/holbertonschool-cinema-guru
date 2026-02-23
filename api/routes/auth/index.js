@@ -7,16 +7,11 @@ const { verifyToken } = require('../../utils/tokens')
 router.use('/register', registerRouter)
 router.use('/login', loginRouter)
 
-router.post('/', verifyToken, (req, res) => {
+router.post('/', verifyToken, (req, res, next) => {
     if (req.userId && req.username) {
-        res.send({
-            userId: req.userId,
-            username: req.username,
-        })
+        res.send({ userId: req.userId, username: req.username })
     } else {
-        res.status(401).send({
-            message: "Invalid token"
-        })
+        next(Object.assign(new Error('Invalid token'), { statusCode: 401 }))
     }
 })
 

@@ -6,7 +6,7 @@ React (Vite + TypeScript) frontend for the Cinema Guru application.
 
 ## Data access layer (reference)
 
-All server and client-side data access lives under **`cinema-guru/src/data/`**. Each domain (e.g. auth, future: movies) has its own folder with the same four-file layout. There are **no index files**; imports point directly at the module files.
+All server and client-side data access lives under **`frontend/src/data/`**. Each domain (e.g. auth, future: movies) has its own folder with the same four-file layout. There are **no index files**; imports point directly at the module files.
 
 ### Per-domain layout: `src/data/<domain>/`
 
@@ -61,7 +61,7 @@ All server and client-side data access lives under **`cinema-guru/src/data/`**. 
 From repo root:
 
 ```bash
-cd cinema-guru
+cd frontend
 npm install
 npm run dev
 ```

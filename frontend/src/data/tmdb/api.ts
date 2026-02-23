@@ -1,4 +1,4 @@
-import { getAccessToken, getTMDB } from "./client"
+import { apiGet } from "@/data/apiClient"
 import type { MovieCategory, TvCategory } from "./types"
 import type {
   ConfigurationResponse,
@@ -14,10 +14,8 @@ let cachedConfig: ConfigurationResponse | null = null
 
 async function getImageConfig(): Promise<ConfigurationResponse> {
   if (cachedConfig) return cachedConfig
-  const tmdb = getTMDB()
-  const config = await tmdb.config.get()
-  cachedConfig = config
-  return config
+  cachedConfig = await apiGet<ConfigurationResponse>("/tmdb/config")
+  return cachedConfig
 }
 
 function buildPosterUrl(baseUrl: string, posterPath: string | null | undefined): string | null {
@@ -51,34 +49,20 @@ async function fetchMovieList(
   category: MovieCategory,
   params?: { page?: number }
 ): Promise<PaginatedResponse<MovieResultItem>> {
-  const tmdb = getTMDB()
-  switch (category) {
-    case "popular":
-      return tmdb.movie_lists.popular(params)
-    case "upcoming":
-      return tmdb.movie_lists.upcoming(params)
-    case "top_rated":
-      return tmdb.movie_lists.top_rated(params)
-    default:
-      return tmdb.movie_lists.popular(params)
-  }
+  const page = params?.page ?? 1
+  return apiGet<PaginatedResponse<MovieResultItem>>(
+    `/tmdb/movies/${category}?page=${page}`
+  )
 }
 
 async function fetchTvList(
   category: TvCategory,
   params?: { page?: number }
 ): Promise<PaginatedResponse<TVSeriesResultItem>> {
-  const tmdb = getTMDB()
-  switch (category) {
-    case "popular":
-      return tmdb.tv_lists.popular(params)
-    case "upcoming":
-      return tmdb.tv_lists.on_the_air(params)
-    case "top_rated":
-      return tmdb.tv_lists.top_rated(params)
-    default:
-      return tmdb.tv_lists.popular(params)
-  }
+  const page = params?.page ?? 1
+  return apiGet<PaginatedResponse<TVSeriesResultItem>>(
+    `/tmdb/tv/${category}?page=${page}`
+  )
 }
 
 type Genre = { id: number; name: string }
@@ -87,16 +71,14 @@ let cachedTvGenres: Genre[] | null = null
 
 async function fetchMovieGenres(): Promise<Genre[]> {
   if (cachedMovieGenres) return cachedMovieGenres
-  const tmdb = getTMDB()
-  const res = await tmdb.genres.movie_list()
+  const res = await apiGet<{ genres: Genre[] }>("/tmdb/genres/movies")
   cachedMovieGenres = res.genres ?? []
   return cachedMovieGenres
 }
 
 async function fetchTvGenres(): Promise<Genre[]> {
   if (cachedTvGenres) return cachedTvGenres
-  const tmdb = getTMDB()
-  const res = await tmdb.genres.tv_list()
+  const res = await apiGet<{ genres: Genre[] }>("/tmdb/genres/tv")
   cachedTvGenres = res.genres ?? []
   return cachedTvGenres
 }
@@ -109,22 +91,13 @@ function getGenreNames(genreIds: number[], type: "movie" | "tv"): string[] {
     .filter((n): n is string => Boolean(n))
 }
 
-const TMDB_BASE = "https://api.themoviedb.org/3"
 const cacheTvExternalIds = new Map<number, number | null>()
 
 async function fetchTvExternalIds(tmdbId: number): Promise<number | null> {
   const cached = cacheTvExternalIds.get(tmdbId)
   if (cached !== undefined) return cached
   try {
-    const token = getAccessToken()
-    const res = await fetch(`${TMDB_BASE}/tv/${tmdbId}/external_ids`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    if (!res.ok) {
-      cacheTvExternalIds.set(tmdbId, null)
-      return null
-    }
-    const data = (await res.json()) as { tvdb_id?: number }
+    const data = await apiGet<{ tvdb_id: number | null }>(`/tmdb/tv/${tmdbId}/external_ids`)
     const tvdb = data.tvdb_id ?? null
     cacheTvExternalIds.set(tmdbId, tvdb)
     return tvdb

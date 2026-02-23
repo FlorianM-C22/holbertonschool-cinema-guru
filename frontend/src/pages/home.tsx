@@ -6,6 +6,7 @@ import { PosterCard } from "@/components/poster-card"
 import { CarouselSkeletonRow } from "@/components/poster-card-skeleton"
 import { useGenres, useImageConfig, useMovieList, useTvList } from "@/data/tmdb/hooks"
 import type { MovieCategory, TvCategory, ViewType } from "@/data/tmdb/types"
+import { usePrefetchFanart } from "@/data/fanart/usePrefetchFanart"
 
 const MOVIE_SECTION_TITLES: Record<MovieCategory, string> = {
   popular: "Popular movies",
@@ -61,6 +62,19 @@ function HomeContent() {
   const defaultTvLoading = showDefaultView && (tvList.isLoading || !imageConfig.loaded)
   const moviesViewLoading = showMoviesView && (movieList.isLoading || !imageConfig.loaded)
   const tvViewLoading = showTvView && (tvList.isLoading || !imageConfig.loaded)
+
+  const prefetchItems =
+    showDefaultView && defaultMovies.length + defaultTvShows.length > 0
+      ? [
+          ...defaultMovies.slice(0, 8).map((m) => ({ id: m.id, mediaType: "movie" as const })),
+          ...defaultTvShows.slice(0, 8).map((t) => ({ id: t.id, mediaType: "tv" as const })),
+        ]
+      : showMoviesView && moviesViewItems.length > 0
+        ? moviesViewItems.slice(0, 12).map((m) => ({ id: m.id, mediaType: "movie" as const }))
+        : showTvView && tvViewItems.length > 0
+          ? tvViewItems.slice(0, 12).map((t) => ({ id: t.id, mediaType: "tv" as const }))
+          : []
+  usePrefetchFanart(prefetchItems, { maxItems: 12, concurrency: 3 })
 
   return (
     <>

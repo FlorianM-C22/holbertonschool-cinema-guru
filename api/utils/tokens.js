@@ -28,19 +28,17 @@ const verifyToken = (req, res, next) => {
 }
 
 
-const validateToken = (req, res) => {
+const validateToken = (req, res, next) => {
     const authHeader = req.header('authorization')
     const token = authHeader && authHeader.split(' ')[1]
-    let decodedD = {}
     if (token === null) return res.sendStatus(401)
     jwt.verify(token, JWT_TOKEN_SECRET, (err, decoded) => {
         if (err) return res.sendStatus(403)
-        const { userId, username } = decoded
-        User.findById(userId).then(user => {
-            res.send(user)
-        }).catch(err => res.status(500).send(err))
+        const { userId } = decoded
+        User.findByPk(userId)
+            .then(user => res.send(user))
+            .catch(e => next(e))
     })
-    return decodedD
 }
 
 module.exports = {

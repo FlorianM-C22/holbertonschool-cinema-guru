@@ -1,27 +1,20 @@
 const express = require('express')
 const router = express.Router()
-const User = require('../../models/User')
-const { comparePassword } = require('../../utils/password')
 const { generateToken } = require('../../utils/tokens')
+const { validateAuth } = require('../../utils/validation')
+const authService = require('../../services/authService')
 
-router.post('/', async (req, res) => {
-    User.findOne({ where: { username: req.body.username } })
-        .then(user => {
-            comparePassword(req.body.password, user.password)
-                .then(correct => {
-                    if (correct) {
-                        generateToken(user.id, user.username)
-                            .then(token => res.send({
-                                message: 'Logged in successfully',
-                                accessToken: token,
-                            }))
-                            .catch(err => res.status(500).send(err))
-                    } else {
-                        res.status(401).send({ message: 'Incorrect credentials' })
-                    }
-                })
-        })
-        .catch(() => res.status(401).send({ message: 'Incorrect credentials' }))
+const CREDENTIALS_ERR = Object.assign(new Error('Incorrect credentials'), { statusCode: 401 })
+
+router.post('/', validateAuth, async (req, res, next) => {
+    try {
+        const payload = await authService.login(req.body.username, req.body.password)
+        if (!payload) return next(CREDENTIALS_ERR)
+        const token = await generateToken(payload.id, payload.username)
+        res.send({ message: 'Logged in successfully', accessToken: token })
+    } catch (err) {
+        next(err)
+    }
 })
 
 module.exports = router

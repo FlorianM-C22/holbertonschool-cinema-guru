@@ -1,22 +1,20 @@
 const express = require('express')
 const router = express.Router()
-const User = require('../../models/User')
 const { generateToken } = require('../../utils/tokens')
+const { validateAuth } = require('../../utils/validation')
+const authService = require('../../services/authService')
 
-router.post('/', async (req, res) => {
-    User.create({
-        username: req.body.username,
-        password: req.body.password,
-    })
-        .then(data => {
-            generateToken(data.id, data.username)
-                .then(token => res.send({
-                    message: 'Registered successfully',
-                    accessToken: token,
-                }))
-                .catch(err => res.status(500).send(err))
-        })
-        .catch(() => res.status(400).send({ message: 'Invalid username' }))
+router.post('/', validateAuth, async (req, res, next) => {
+    try {
+        const payload = await authService.register(req.body.username, req.body.password)
+        const token = await generateToken(payload.id, payload.username)
+        res.send({ message: 'Registered successfully', accessToken: token })
+    } catch (err) {
+        const e = err.name === 'SequelizeUniqueConstraintError'
+            ? Object.assign(new Error('Invalid username'), { statusCode: 400 })
+            : err
+        next(e)
+    }
 })
 
 module.exports = router

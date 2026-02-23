@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Info, Heart, Clock, ChevronLeft, ChevronRight } from "lucide-react"
 import * as fanartApi from "@/data/fanart/api"
+import * as listsApi from "@/data/lists/api"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -210,6 +211,7 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
               variant="default"
               className="gap-2 bg-white/20 text-white hover:bg-white/30"
               aria-label={t("hero.addToFavourites")}
+              onClick={() => current && listsApi.addFavorite(current.id, current.mediaType).catch(() => {})}
             >
               <Heart className="h-5 w-5" aria-hidden />
               {t("hero.addToFavourites")}
@@ -219,6 +221,7 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
               variant="default"
               className="gap-2 bg-white/20 text-white hover:bg-white/30"
               aria-label={t("hero.watchLater")}
+              onClick={() => current && listsApi.addWatchLater(current.id, current.mediaType).catch(() => {})}
             >
               <Clock className="h-5 w-5" aria-hidden />
               {t("hero.watchLater")}

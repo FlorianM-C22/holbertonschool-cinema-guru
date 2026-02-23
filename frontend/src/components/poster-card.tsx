@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Info, Heart, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import * as fanartApi from "@/data/fanart/api"
+import * as listsApi from "@/data/lists/api"
 
 type PosterCardProps = {
   posterUrl: string | null
@@ -149,6 +150,7 @@ function PosterCard({
                   type="button"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
                   aria-label={t("hero.addToFavourites")}
+                  onClick={() => listsApi.addFavorite(id, mediaType).catch(() => {})}
                 >
                   <Heart className="h-5 w-5" />
                 </button>
@@ -156,6 +158,7 @@ function PosterCard({
                   type="button"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
                   aria-label={t("hero.watchLater")}
+                  onClick={() => listsApi.addWatchLater(id, mediaType).catch(() => {})}
                 >
                   <Clock className="h-5 w-5" />
                 </button>
