@@ -139,3 +139,12 @@
 .carousel-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* Conteneur avec défilement vertical mais scrollbar masquée */
+.scroll-y-invisible {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scroll-y-invisible::-webkit-scrollbar {
+  display: none;
+}

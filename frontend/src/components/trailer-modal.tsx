@@ -48,7 +48,7 @@ function TrailerModal({ isOpen, onClose, tmdbId, mediaType }: TrailerModalProps)
   ].join(" ")
 
   const panelClassName = [
-    "relative z-50 w-full max-w-4xl transform overflow-hidden rounded-lg bg-background text-foreground shadow-2xl transition-all duration-300 ease-out",
+    "relative z-50 flex max-h-[85vh] w-full max-w-2xl flex-col transform overflow-hidden rounded-lg bg-background text-foreground shadow-2xl transition-all duration-300 ease-out",
     isVisible ? "scale-100 translate-y-0 opacity-100" : "scale-95 translate-y-4 opacity-0",
   ].join(" ")
 
@@ -73,8 +73,8 @@ function TrailerModal({ isOpen, onClose, tmdbId, mediaType }: TrailerModalProps)
           <X className="h-4 w-4" />
         </button>
 
-        <div className="flex flex-col gap-4">
-          <div className="aspect-video w-full bg-black">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto scroll-y-invisible">
+          <div className="aspect-video w-full shrink-0 bg-black">
             {trailer?.youtubeVideoId ? (
               <iframe
                 title={trailer.title ?? "Trailer"}
