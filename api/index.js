@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRouter = require('./routes/auth')
 const userActivitiesRouter = require('./routes/userActivities')
 const tmdbRouter = require('./routes/tmdb')
+const mediaRouter = require('./routes/media')
 const fanartRouter = require('./routes/fanart')
 const meRouter = require('./routes/me')
 require('./models/UserListEntry')
@@ -23,6 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/auth', authRouter);
 app.use('/api/activity', userActivitiesRouter);
 app.use('/api/tmdb', tmdbRouter);
+app.use('/api/media', mediaRouter);
 app.use('/api/fanart', fanartRouter);
 app.use('/api/me', meRouter);
 

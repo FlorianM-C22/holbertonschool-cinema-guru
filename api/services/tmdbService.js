@@ -55,12 +55,28 @@ async function getTvGenres() {
     return cache.tvGenres
 }
 
-async function getMovieDetail(tmdbId) {
-    return request(`/movie/${tmdbId}`)
+async function getMovieDetail(tmdbId, language) {
+    const params = {}
+    if (language) params.language = language
+    return request(`/movie/${tmdbId}`, params)
 }
 
-async function getTvDetail(tmdbId) {
-    return request(`/tv/${tmdbId}`)
+async function getTvDetail(tmdbId, language) {
+    const params = {}
+    if (language) params.language = language
+    return request(`/tv/${tmdbId}`, params)
+}
+
+async function getMovieCredits(tmdbId, language) {
+    const params = {}
+    if (language) params.language = language
+    return request(`/movie/${tmdbId}/credits`, params)
+}
+
+async function getTvCredits(tmdbId, language) {
+    const params = {}
+    if (language) params.language = language
+    return request(`/tv/${tmdbId}/credits`, params)
 }
 
 async function getTvExternalIds(tmdbId) {
@@ -85,5 +101,7 @@ module.exports = {
     getTvGenres,
     getMovieDetail,
     getTvDetail,
+    getMovieCredits,
+    getTvCredits,
     getTvExternalIds,
 }

@@ -9,6 +9,7 @@ import type {
 
 const POSTER_SIZE = "w342"
 const BACKDROP_SIZE = "w1280"
+const PROFILE_SIZE = "w185"
 
 let cachedConfig: ConfigurationResponse | null = null
 
@@ -32,6 +33,17 @@ async function getPosterUrl(posterPath: string | null | undefined): Promise<stri
 function getPosterUrlSync(posterPath: string | null | undefined): string | null {
   if (!cachedConfig) return null
   return buildPosterUrl(cachedConfig.images.secure_base_url, posterPath)
+}
+
+function buildProfileUrl(baseUrl: string, profilePath: string | null | undefined): string | null {
+  if (!profilePath) return null
+  const base = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`
+  return `${base}${PROFILE_SIZE}${profilePath}`
+}
+
+function getProfileUrlSync(profilePath: string | null | undefined): string | null {
+  if (!cachedConfig) return null
+  return buildProfileUrl(cachedConfig.images.secure_base_url, profilePath)
 }
 
 function buildBackdropUrl(baseUrl: string, backdropPath: string | null | undefined): string | null {
@@ -120,6 +132,7 @@ export {
   getPosterUrl,
   getPosterUrlSync,
   getBackdropUrlSync,
+  getProfileUrlSync,
   fetchMovieList,
   fetchTvList,
   fetchMovieDetail,

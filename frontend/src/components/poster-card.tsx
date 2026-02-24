@@ -4,6 +4,7 @@ import { Info, Heart, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import * as fanartApi from "@/data/fanart/api"
 import { useLists } from "@/data/lists/context"
+import { TrailerModal } from "@/components/trailer-modal"
 
 type PosterCardProps = {
   posterUrl: string | null
@@ -37,6 +38,7 @@ function PosterCard({
   const { t } = useTranslation()
   const { isFavorite, isWatchLater, toggleFavorite, toggleWatchLater } = useLists()
   const [isHovered, setIsHovered] = useState(false)
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [fanartBackgroundUrl, setFanartBackgroundUrl] = useState<string | null>(
     null,
@@ -144,6 +146,7 @@ function PosterCard({
                   type="button"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/80 bg-transparent text-white transition-colors hover:bg-white/20"
                   aria-label={t("hero.info")}
+                  onClick={() => setIsInfoModalOpen(true)}
                 >
                   <Info className="h-5 w-5" />
                 </button>
@@ -182,6 +185,12 @@ function PosterCard({
           </div>
         </div>
       )}
+      <TrailerModal
+        isOpen={isInfoModalOpen}
+        onClose={() => setIsInfoModalOpen(false)}
+        tmdbId={id}
+        mediaType={mediaType}
+      />
     </article>
   )
 }

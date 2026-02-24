@@ -23,6 +23,7 @@ type ImageConfigState = {
 function useImageConfig(): ImageConfigState & {
   getPosterUrl: (path: string | null | undefined) => string | null
   getBackdropUrl: (path: string | null | undefined) => string | null
+  getProfileUrl: (path: string | null | undefined) => string | null
 } {
   const [state, setState] = useState<ImageConfigState>({ loaded: false, error: null })
 
@@ -32,6 +33,10 @@ function useImageConfig(): ImageConfigState & {
 
   const getBackdropUrl = useCallback((backdropPath: string | null | undefined): string | null => {
     return tmdbApi.getBackdropUrlSync(backdropPath)
+  }, [])
+
+  const getProfileUrl = useCallback((profilePath: string | null | undefined): string | null => {
+    return tmdbApi.getProfileUrlSync(profilePath)
   }, [])
 
   useEffect(() => {
@@ -49,7 +54,7 @@ function useImageConfig(): ImageConfigState & {
     }
   }, [])
 
-  return { ...state, getPosterUrl, getBackdropUrl }
+  return { ...state, getPosterUrl, getBackdropUrl, getProfileUrl }
 }
 
 function useMovieList(category: MovieCategory): MovieListState {
