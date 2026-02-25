@@ -127,6 +127,78 @@ async function fetchTvExternalIds(tmdbId: number): Promise<number | null> {
   }
 }
 
+type MediaSearchResult = {
+  id: number
+  tmdbId: number
+  mediaType: "movie" | "tv"
+  title: string
+  overview: string
+  posterPath: string | null
+  backdropPath: string | null
+  voteAverage: number
+  voteCount: number
+  popularity: number
+  releaseDate: string | null
+  firstAirDate: string | null
+  genreIds: number[]
+}
+
+type MediaSearchResponse = {
+  page: number
+  total_pages: number
+  total_results: number
+  results: MediaSearchResult[]
+  filters: {
+    q: string
+    type: "movie" | "tv" | "all"
+    genreIds: number[]
+    yearMin?: number
+    yearMax?: number
+  }
+}
+
+type MediaSearchParams = {
+  query?: string
+  type?: "movie" | "tv" | "all"
+  genreIds?: number[]
+  yearMin?: number
+  yearMax?: number
+  page?: number
+}
+
+async function searchMedia(params: MediaSearchParams): Promise<MediaSearchResponse> {
+  const searchParams = new URLSearchParams()
+
+  if (params.query && params.query.trim().length > 0) {
+    searchParams.set("q", params.query.trim())
+  }
+
+  if (params.type && params.type !== "all") {
+    searchParams.set("type", params.type)
+  }
+
+  if (params.genreIds && params.genreIds.length > 0) {
+    searchParams.set("genreIds", params.genreIds.join(","))
+  }
+
+  if (typeof params.yearMin === "number") {
+    searchParams.set("yearMin", String(params.yearMin))
+  }
+
+  if (typeof params.yearMax === "number") {
+    searchParams.set("yearMax", String(params.yearMax))
+  }
+
+  if (typeof params.page === "number" && Number.isFinite(params.page) && params.page > 0) {
+    searchParams.set("page", String(params.page))
+  }
+
+  const queryString = searchParams.toString()
+  const url = queryString.length > 0 ? `/tmdb/search?${queryString}` : "/tmdb/search"
+
+  return apiGet<MediaSearchResponse>(url)
+}
+
 export {
   getImageConfig,
   getPosterUrl,
@@ -141,5 +213,13 @@ export {
   fetchTvGenres,
   getGenreNames,
   fetchTvExternalIds,
+  searchMedia,
 }
-export type { MovieResultItem, TVSeriesResultItem, PaginatedResponse }
+export type {
+  MovieResultItem,
+  TVSeriesResultItem,
+  PaginatedResponse,
+  MediaSearchResult,
+  MediaSearchResponse,
+  MediaSearchParams,
+}

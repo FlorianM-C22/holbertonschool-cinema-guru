@@ -4,6 +4,7 @@ import { AuthForm } from "./components/auth/auth-form"
 import { Home } from "./pages/home"
 import { Favorites } from "./pages/favorites"
 import { WatchLater } from "./pages/watch-later"
+import { SearchPage } from "./pages/search"
 import { ProtectedRoute } from "./components/auth/protected-route"
 import loginBg from "./assets/login-bg.jpg"
 
@@ -42,6 +43,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <SearchPage />
             </ProtectedRoute>
           }
         />

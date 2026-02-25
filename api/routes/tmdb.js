@@ -89,4 +89,81 @@ router.get('/tv/:tmdbId/external_ids', async (req, res, next) => {
     }
 })
 
+router.get('/search', async (req, res, next) => {
+    try {
+        const {
+            q,
+            type = 'all',
+            genreIds,
+            yearMin,
+            yearMax,
+            page,
+        } = req.query
+
+        const allowedTypes = ['movie', 'tv', 'all']
+        if (!allowedTypes.includes(type)) {
+            return next(
+                Object.assign(new Error('Invalid type'), { statusCode: 400 })
+            )
+        }
+
+        let parsedPage = 1
+        if (page) {
+            const numericPage = parseInt(page, 10)
+            if (!Number.isNaN(numericPage) && numericPage > 0) {
+                parsedPage = numericPage
+            }
+        }
+
+        let parsedGenreIds = []
+        if (typeof genreIds === 'string' && genreIds.trim().length > 0) {
+            parsedGenreIds = genreIds
+                .split(',')
+                .map((value) => parseInt(value, 10))
+                .filter((value) => !Number.isNaN(value))
+        }
+
+        let parsedYearMin
+        if (yearMin) {
+            const numericYearMin = parseInt(yearMin, 10)
+            if (!Number.isNaN(numericYearMin)) {
+                parsedYearMin = numericYearMin
+            }
+        }
+
+        let parsedYearMax
+        if (yearMax) {
+            const numericYearMax = parseInt(yearMax, 10)
+            if (!Number.isNaN(numericYearMax)) {
+                parsedYearMax = numericYearMax
+            }
+        }
+
+        if (
+            typeof parsedYearMin === 'number' &&
+            typeof parsedYearMax === 'number' &&
+            parsedYearMin > parsedYearMax
+        ) {
+            return next(
+                Object.assign(new Error('Invalid year range'), {
+                    statusCode: 400,
+                })
+            )
+        }
+
+        const data = await tmdbService.searchMedia({
+            q,
+            type,
+            genreIds: parsedGenreIds,
+            yearMin: parsedYearMin,
+            yearMax: parsedYearMax,
+            page: parsedPage,
+        })
+
+        res.json(data)
+    } catch (err) {
+        next(err)
+    }
+})
+
 module.exports = router

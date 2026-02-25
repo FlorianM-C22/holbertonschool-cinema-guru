@@ -205,7 +205,17 @@ function Navbar() {
                   isSearchVisible ? "translate-x-0" : "translate-x-4",
                 )}
               >
-                <SearchBar className="w-full" />
+                <SearchBar
+                  className="w-full"
+                  onSearch={(value) => {
+                    const trimmed = value.trim()
+                    if (trimmed.length === 0) return
+                    const params = new URLSearchParams()
+                    params.set("q", trimmed)
+                    params.set("type", "all")
+                    navigate(`/search?${params.toString()}`)
+                  }}
+                />
               </div>
             </div>
             <Button

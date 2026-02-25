@@ -17,6 +17,7 @@ type PosterCardProps = {
   getGenreNames?: (genreIds: number[], type: "movie" | "tv") => string[]
   backdropUrl?: string | null
   className?: string
+  layout?: "carousel" | "grid"
 }
 
 const FOLDED_WIDTH = "14rem"
@@ -34,6 +35,7 @@ function PosterCard({
   getGenreNames,
   backdropUrl: backdropUrlProp,
   className,
+  layout = "carousel",
 }: PosterCardProps) {
   const { t } = useTranslation()
   const { isFavorite, isWatchLater, toggleFavorite, toggleWatchLater } = useLists()
@@ -71,16 +73,24 @@ function PosterCard({
   const expandedBackgroundUrl =
     fanartBackgroundUrl ?? backdropUrlProp ?? posterUrl
 
+  const style =
+    layout === "carousel"
+      ? {
+          width: isHovered ? EXPANDED_WIDTH : FOLDED_WIDTH,
+          height: CARD_HEIGHT,
+        }
+      : {
+          width: "100%",
+          height: "100%",
+        }
+
   return (
     <article
       className={cn(
         "relative shrink-0 overflow-hidden rounded-lg transition-[width] duration-300 ease-out",
         className,
       )}
-      style={{
-        width: isHovered ? EXPANDED_WIDTH : FOLDED_WIDTH,
-        height: CARD_HEIGHT,
-      }}
+      style={style}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}

@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
 import * as tmdbApi from "./api"
 import type { MovieCategory, TvCategory } from "./types"
-import type { MovieResultItem, PaginatedResponse, TVSeriesResultItem } from "@lorenzopant/tmdb"
+import type {
+  MovieResultItem,
+  PaginatedResponse,
+  TVSeriesResultItem,
+} from "@lorenzopant/tmdb"
+import type { MediaSearchParams, MediaSearchResponse } from "./api"
 
 type MovieListState = {
   data: PaginatedResponse<MovieResultItem> | null
@@ -11,6 +16,12 @@ type MovieListState = {
 
 type TvListState = {
   data: PaginatedResponse<TVSeriesResultItem> | null
+  isLoading: boolean
+  error: Error | null
+}
+
+type MediaSearchState = {
+  data: MediaSearchResponse | null
   isLoading: boolean
   error: Error | null
 }
@@ -123,11 +134,17 @@ function useTvList(category: TvCategory): TvListState {
   return state
 }
 
-function useGenres(): {
+type GenresHookResult = {
   getGenreNames: (genreIds: number[], type: "movie" | "tv") => string[]
   loaded: boolean
-} {
+  movieGenres: { id: number; name: string }[]
+  tvGenres: { id: number; name: string }[]
+}
+
+function useGenres(): GenresHookResult {
   const [loaded, setLoaded] = useState(false)
+  const [movieGenres, setMovieGenres] = useState<{ id: number; name: string }[]>([])
+  const [tvGenres, setTvGenres] = useState<{ id: number; name: string }[]>([])
 
   const getGenreNames = useCallback((genreIds: number[], type: "movie" | "tv") => {
     return tmdbApi.getGenreNames(genreIds, type)
@@ -136,19 +153,88 @@ function useGenres(): {
   useEffect(() => {
     let cancelled = false
     Promise.all([tmdbApi.fetchMovieGenres(), tmdbApi.fetchTvGenres()]).then(
-      () => {
-        if (!cancelled) setLoaded(true)
+      ([movies, tv]) => {
+        if (!cancelled) {
+          setMovieGenres(movies)
+          setTvGenres(tv)
+          setLoaded(true)
+        }
       },
       () => {
         if (!cancelled) setLoaded(true)
-      }
+      },
     )
     return () => {
       cancelled = true
     }
   }, [])
 
-  return { getGenreNames, loaded }
+  return { getGenreNames, loaded, movieGenres, tvGenres }
 }
 
-export { useImageConfig, useMovieList, useTvList, useGenres }
+function useMediaSearch(params: MediaSearchParams): MediaSearchState {
+  const [state, setState] = useState<MediaSearchState>({
+    data: null,
+    isLoading: false,
+    error: null,
+  })
+
+  useEffect(() => {
+    const hasQuery =
+      typeof params.query === "string" && params.query.trim().length > 0
+    const hasFilters =
+      hasQuery ||
+      (Array.isArray(params.genreIds) && params.genreIds.length > 0) ||
+      typeof params.yearMin === "number" ||
+      typeof params.yearMax === "number"
+
+    if (!hasFilters) {
+      setState((current) => ({
+        ...current,
+        isLoading: false,
+        error: null,
+      }))
+      return
+    }
+
+    let cancelled = false
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setState((current) => ({
+          ...current,
+          isLoading: true,
+          error: null,
+        }))
+      }
+    })
+
+    tmdbApi
+      .searchMedia(params)
+      .then((data) => {
+        if (!cancelled) {
+          setState({
+            data,
+            isLoading: false,
+            error: null,
+          })
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setState({
+            data: null,
+            isLoading: false,
+            error: err instanceof Error ? err : new Error(String(err)),
+          })
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [params.query, params.type, params.genreIds, params.yearMin, params.yearMax, params.page])
+
+  return state
+}
+
+export { useImageConfig, useMovieList, useTvList, useGenres, useMediaSearch }

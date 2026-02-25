@@ -93,6 +93,154 @@ async function getTvExternalIds(tmdbId) {
     }
 }
 
+function normalizeMovieResult(result) {
+    return {
+        id: result.id,
+        tmdbId: result.id,
+        mediaType: 'movie',
+        title: result.title ?? result.original_title ?? '',
+        overview: result.overview ?? '',
+        posterPath: result.poster_path ?? null,
+        backdropPath: result.backdrop_path ?? null,
+        voteAverage: result.vote_average ?? 0,
+        voteCount: result.vote_count ?? 0,
+        popularity: result.popularity ?? 0,
+        releaseDate: result.release_date ?? null,
+        firstAirDate: null,
+        genreIds: result.genre_ids ?? [],
+    }
+}
+
+function normalizeTvResult(result) {
+    return {
+        id: result.id,
+        tmdbId: result.id,
+        mediaType: 'tv',
+        title: result.name ?? result.original_name ?? '',
+        overview: result.overview ?? '',
+        posterPath: result.poster_path ?? null,
+        backdropPath: result.backdrop_path ?? null,
+        voteAverage: result.vote_average ?? 0,
+        voteCount: result.vote_count ?? 0,
+        popularity: result.popularity ?? 0,
+        releaseDate: null,
+        firstAirDate: result.first_air_date ?? null,
+        genreIds: result.genre_ids ?? [],
+    }
+}
+
+async function searchMedia(options) {
+    const {
+        q,
+        type = 'all',
+        genreIds,
+        yearMin,
+        yearMax,
+        page = 1,
+    } = options || {}
+
+    const parsedPage = Number.isFinite(page) ? page : 1
+
+    const hasQuery = typeof q === 'string' && q.trim().length > 0
+    const hasGenres = Array.isArray(genreIds) && genreIds.length > 0
+    const hasYearMin = typeof yearMin === 'number' && Number.isFinite(yearMin)
+    const hasYearMax = typeof yearMax === 'number' && Number.isFinite(yearMax)
+
+    const yearRange = {}
+    if (hasYearMin) {
+        yearRange.yearMin = yearMin
+    }
+    if (hasYearMax) {
+        yearRange.yearMax = yearMax
+    }
+
+    const sharedDiscoverParams = {}
+    if (hasGenres) {
+        sharedDiscoverParams.with_genres = genreIds.join(',')
+    }
+    if (hasYearMin) {
+        sharedDiscoverParams['primary_release_date.gte'] = `${yearMin}-01-01`
+    }
+    if (hasYearMax) {
+        sharedDiscoverParams['primary_release_date.lte'] = `${yearMax}-12-31`
+    }
+
+    const sharedTvDiscoverParams = {}
+    if (hasGenres) {
+        sharedTvDiscoverParams.with_genres = genreIds.join(',')
+    }
+    if (hasYearMin) {
+        sharedTvDiscoverParams['first_air_date.gte'] = `${yearMin}-01-01`
+    }
+    if (hasYearMax) {
+        sharedTvDiscoverParams['first_air_date.lte'] = `${yearMax}-12-31`
+    }
+
+    const results = []
+    let combinedPage = parsedPage
+    let combinedTotalPages = 1
+    let combinedTotalResults = 0
+
+    if (type === 'movie' || type === 'all') {
+        const params = { page: parsedPage }
+        if (hasQuery) {
+            params.query = q.trim()
+        } else {
+            Object.assign(params, sharedDiscoverParams)
+        }
+
+        const movieData = await request(
+            hasQuery ? '/search/movie' : '/discover/movie',
+            params
+        )
+
+        const movieResults = Array.isArray(movieData.results)
+            ? movieData.results.map(normalizeMovieResult)
+            : []
+
+        results.push(...movieResults)
+        combinedTotalResults += movieData.total_results ?? 0
+        combinedTotalPages = Math.max(combinedTotalPages, movieData.total_pages ?? 1)
+    }
+
+    if (type === 'tv' || type === 'all') {
+        const params = { page: parsedPage }
+        if (hasQuery) {
+            params.query = q.trim()
+        } else {
+            Object.assign(params, sharedTvDiscoverParams)
+        }
+
+        const tvData = await request(
+            hasQuery ? '/search/tv' : '/discover/tv',
+            params
+        )
+
+        const tvResults = Array.isArray(tvData.results)
+            ? tvData.results.map(normalizeTvResult)
+            : []
+
+        results.push(...tvResults)
+        combinedTotalResults += tvData.total_results ?? 0
+        combinedTotalPages = Math.max(combinedTotalPages, tvData.total_pages ?? 1)
+    }
+
+    results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+
+    return {
+        page: combinedPage,
+        total_pages: combinedTotalPages,
+        total_results: combinedTotalResults,
+        results,
+        filters: {
+            q: hasQuery ? q.trim() : '',
+            type,
+            genreIds: hasGenres ? genreIds : [],
+            ...yearRange,
+        },
+    }
+}
+
 module.exports = {
     getConfig,
     getMovieList,
@@ -104,4 +252,5 @@ module.exports = {
     getMovieCredits,
     getTvCredits,
     getTvExternalIds,
+    searchMedia,
 }
