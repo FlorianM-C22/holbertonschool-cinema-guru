@@ -55,6 +55,7 @@ function parseSearchParams(searchParams: URLSearchParams): MediaSearchParams {
     genreIds,
     yearMin,
     yearMax,
+    originalLanguage: searchParams.get("language") ?? undefined,
     page,
   }
 

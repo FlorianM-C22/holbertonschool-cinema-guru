@@ -13,6 +13,7 @@ const cache = {
     movieGenres: null,
     tvGenres: null,
     externalIds: new Map(),
+    languages: null,
 }
 
 async function request(path, params = {}) {
@@ -53,6 +54,13 @@ async function getTvGenres() {
     const data = await request('/genre/tv/list')
     cache.tvGenres = data.genres || []
     return cache.tvGenres
+}
+
+async function getLanguages() {
+    if (cache.languages) return cache.languages
+    const data = await request('/configuration/languages')
+    cache.languages = Array.isArray(data) ? data : []
+    return cache.languages
 }
 
 async function getMovieDetail(tmdbId, language) {
@@ -108,6 +116,7 @@ function normalizeMovieResult(result) {
         releaseDate: result.release_date ?? null,
         firstAirDate: null,
         genreIds: result.genre_ids ?? [],
+        originalLanguage: result.original_language ?? null,
     }
 }
 
@@ -126,6 +135,7 @@ function normalizeTvResult(result) {
         releaseDate: null,
         firstAirDate: result.first_air_date ?? null,
         genreIds: result.genre_ids ?? [],
+        originalLanguage: result.original_language ?? null,
     }
 }
 
@@ -137,6 +147,7 @@ async function searchMedia(options) {
         yearMin,
         yearMax,
         page = 1,
+        originalLanguage,
     } = options || {}
 
     const parsedPage = Number.isFinite(page) ? page : 1
@@ -145,6 +156,7 @@ async function searchMedia(options) {
     const hasGenres = Array.isArray(genreIds) && genreIds.length > 0
     const hasYearMin = typeof yearMin === 'number' && Number.isFinite(yearMin)
     const hasYearMax = typeof yearMax === 'number' && Number.isFinite(yearMax)
+    const hasOriginalLanguage = typeof originalLanguage === 'string' && originalLanguage.trim().length > 0
 
     const yearRange = {}
     if (hasYearMin) {
@@ -164,6 +176,9 @@ async function searchMedia(options) {
     if (hasYearMax) {
         sharedDiscoverParams['primary_release_date.lte'] = `${yearMax}-12-31`
     }
+    if (hasOriginalLanguage) {
+        sharedDiscoverParams.with_original_language = originalLanguage.trim()
+    }
 
     const sharedTvDiscoverParams = {}
     if (hasGenres) {
@@ -174,6 +189,9 @@ async function searchMedia(options) {
     }
     if (hasYearMax) {
         sharedTvDiscoverParams['first_air_date.lte'] = `${yearMax}-12-31`
+    }
+    if (hasOriginalLanguage) {
+        sharedTvDiscoverParams.with_original_language = originalLanguage.trim()
     }
 
     const results = []
@@ -216,6 +234,10 @@ async function searchMedia(options) {
         let movieResults = Array.isArray(movieData.results)
             ? movieData.results.map(normalizeMovieResult)
             : []
+        if (hasOriginalLanguage && movieResults.length > 0 && hasQuery) {
+            const lang = originalLanguage.trim()
+            movieResults = movieResults.filter((r) => r.originalLanguage === lang)
+        }
         if (hasQuery && hasYearMin && hasYearMax && movieResults.length > 0) {
             const minDate = `${yearMin}-01-01`
             const maxDate = `${yearMax}-12-31`
@@ -248,6 +270,10 @@ async function searchMedia(options) {
         let tvResults = Array.isArray(tvData.results)
             ? tvData.results.map(normalizeTvResult)
             : []
+        if (hasOriginalLanguage && tvResults.length > 0 && hasQuery) {
+            const lang = originalLanguage.trim()
+            tvResults = tvResults.filter((r) => r.originalLanguage === lang)
+        }
         if (hasQuery && hasYearMin && hasYearMax && tvResults.length > 0) {
             const minDate = `${yearMin}-01-01`
             const maxDate = `${yearMax}-12-31`
@@ -273,6 +299,7 @@ async function searchMedia(options) {
             type,
             genreIds: hasGenres ? genreIds : [],
             ...yearRange,
+            originalLanguage: hasOriginalLanguage ? originalLanguage.trim() : undefined,
         },
     }
 }
@@ -283,6 +310,7 @@ module.exports = {
     getTvList,
     getMovieGenres,
     getTvGenres,
+    getLanguages,
     getMovieDetail,
     getTvDetail,
     getMovieCredits,

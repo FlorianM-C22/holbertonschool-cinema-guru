@@ -14,6 +14,8 @@ const DEBOUNCE_MS = 350
 
 interface SearchBarProps extends React.ComponentProps<"input"> {
   value?: string
+  isDynamicSearch?: boolean
+  onDebouncedChange?: (value: string) => void
   onSearch?: (value: string) => void
 }
 
@@ -21,6 +23,8 @@ function SearchBar({
   className,
   placeholder,
   value: valueFromUrl,
+  isDynamicSearch,
+  onDebouncedChange,
   onSearch,
   ...props
 }: SearchBarProps) {
@@ -51,8 +55,8 @@ function SearchBar({
     const next = e.target.value
     setValue(next)
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (onSearch) {
-      debounceRef.current = setTimeout(() => applySearch(next), DEBOUNCE_MS)
+    if (isDynamicSearch && onDebouncedChange) {
+      debounceRef.current = setTimeout(() => onDebouncedChange(next), DEBOUNCE_MS)
     }
   }
 

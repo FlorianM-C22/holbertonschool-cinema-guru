@@ -141,6 +141,13 @@ type MediaSearchResult = {
   releaseDate: string | null
   firstAirDate: string | null
   genreIds: number[]
+  originalLanguage?: string
+}
+
+type TmdbLanguage = {
+  iso_639_1: string
+  english_name: string
+  name: string
 }
 
 type MediaSearchResponse = {
@@ -154,6 +161,7 @@ type MediaSearchResponse = {
     genreIds: number[]
     yearMin?: number
     yearMax?: number
+    originalLanguage?: string
   }
 }
 
@@ -163,6 +171,7 @@ type MediaSearchParams = {
   genreIds?: number[]
   yearMin?: number
   yearMax?: number
+  originalLanguage?: string
   page?: number
 }
 
@@ -189,6 +198,10 @@ async function searchMedia(params: MediaSearchParams): Promise<MediaSearchRespon
     searchParams.set("yearMax", String(params.yearMax))
   }
 
+  if (typeof params.originalLanguage === "string" && params.originalLanguage.trim().length > 0) {
+    searchParams.set("language", params.originalLanguage.trim())
+  }
+
   if (typeof params.page === "number" && Number.isFinite(params.page) && params.page > 0) {
     searchParams.set("page", String(params.page))
   }
@@ -197,6 +210,11 @@ async function searchMedia(params: MediaSearchParams): Promise<MediaSearchRespon
   const url = queryString.length > 0 ? `/tmdb/search?${queryString}` : "/tmdb/search"
 
   return apiGet<MediaSearchResponse>(url)
+}
+
+async function fetchLanguages(): Promise<TmdbLanguage[]> {
+  const res = await apiGet<{ languages: TmdbLanguage[] }>("/tmdb/languages")
+  return res.languages ?? []
 }
 
 export {
@@ -214,6 +232,7 @@ export {
   getGenreNames,
   fetchTvExternalIds,
   searchMedia,
+  fetchLanguages,
 }
 export type {
   MovieResultItem,
@@ -222,4 +241,5 @@ export type {
   MediaSearchResult,
   MediaSearchResponse,
   MediaSearchParams,
+  TmdbLanguage,
 }

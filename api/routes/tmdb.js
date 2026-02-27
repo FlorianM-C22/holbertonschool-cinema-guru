@@ -58,6 +58,15 @@ router.get('/genres/tv', async (req, res, next) => {
     }
 })
 
+router.get('/languages', async (req, res, next) => {
+    try {
+        const languages = await tmdbService.getLanguages()
+        res.json({ languages })
+    } catch (err) {
+        next(err)
+    }
+})
+
 router.get('/movies/:tmdbId/detail', async (req, res, next) => {
     try {
         const tmdbId = parseInt(req.params.tmdbId, 10)
@@ -98,6 +107,7 @@ router.get('/search', async (req, res, next) => {
             yearMin,
             yearMax,
             page,
+            language,
         } = req.query
 
         const allowedTypes = ['movie', 'tv', 'all']
@@ -158,6 +168,7 @@ router.get('/search', async (req, res, next) => {
             yearMin: parsedYearMin,
             yearMax: parsedYearMax,
             page: parsedPage,
+            originalLanguage: typeof language === 'string' && language.trim().length > 0 ? language.trim() : undefined,
         })
 
         res.json(data)

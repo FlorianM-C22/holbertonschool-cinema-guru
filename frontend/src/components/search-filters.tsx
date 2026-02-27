@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { YearRangeFilter } from "@/components/year-range-filter"
-import { useGenres } from "@/data/tmdb/hooks"
+import { useGenres, useLanguages } from "@/data/tmdb/hooks"
 
 const DEFAULT_MIN_YEAR = 1950
 const DEFAULT_MAX_YEAR = new Date().getFullYear()
@@ -17,6 +17,7 @@ const DEFAULT_MAX_YEAR = new Date().getFullYear()
 function SearchFilters() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { movieGenres, tvGenres } = useGenres()
+  const { languages, loaded: languagesLoaded } = useLanguages()
 
   const typeParam = searchParams.get("type")
   const type: "movie" | "tv" | "all" =
@@ -36,6 +37,7 @@ function SearchFilters() {
 
   const yearMinParam = searchParams.get("yearMin")
   const yearMaxParam = searchParams.get("yearMax")
+  const languageParam = searchParams.get("language")
 
   const initialMinYear =
     yearMinParam !== null && yearMinParam.length > 0
@@ -124,6 +126,7 @@ function SearchFilters() {
     next.set("yearMin", String(DEFAULT_MIN_YEAR))
     next.set("yearMax", String(DEFAULT_MAX_YEAR))
     next.set("type", "all")
+    next.delete("language")
     next.delete("page")
     setSearchParams(next)
   }
@@ -172,6 +175,36 @@ function SearchFilters() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Language</span>
+          <Select
+            value={languageParam ?? "all"}
+            onValueChange={(code) => {
+              const next = new URLSearchParams(searchParams)
+              if (code === "all") {
+                next.delete("language")
+              } else {
+                next.set("language", code)
+              }
+              next.delete("page")
+              setSearchParams(next)
+            }}
+            disabled={!languagesLoaded}
+          >
+            <SelectTrigger className="min-w-[8rem]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All languages</SelectItem>
+              {languages.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="ml-auto flex items-center gap-2">

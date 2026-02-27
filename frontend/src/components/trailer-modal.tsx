@@ -1,4 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react"
+import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { useMediaDetails } from "@/data/media/hooks"
 import { useImageConfig } from "@/data/tmdb/hooks"
@@ -43,13 +44,18 @@ function TrailerModal({ isOpen, onClose, tmdbId, mediaType }: TrailerModalProps)
   if (!isOpen || tmdbId == null) return null
 
   const overlayClassName = [
-    "fixed inset-0 z-50 flex items-center justify-center bg-black/70 transition-opacity duration-300",
+    "fixed inset-0 z-50 flex items-center justify-center bg-black/70 transition-opacity duration-300 p-4",
     isVisible ? "opacity-100" : "opacity-0",
   ].join(" ")
 
+  const panelWrapperClassName = [
+    "absolute left-1/2 top-1/2 z-50 w-full max-w-2xl max-h-[85vh] -translate-x-1/2 -translate-y-1/2",
+    "transform transition-all duration-300 ease-out",
+    isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0",
+  ].join(" ")
+
   const panelClassName = [
-    "relative z-50 flex max-h-[85vh] w-full max-w-2xl flex-col transform overflow-hidden rounded-lg bg-background text-foreground shadow-2xl transition-all duration-300 ease-out",
-    isVisible ? "scale-100 translate-y-0 opacity-100" : "scale-95 translate-y-4 opacity-0",
+    "relative flex max-h-[85vh] w-full flex-col overflow-hidden rounded-lg bg-background text-foreground shadow-2xl",
   ].join(" ")
 
   const handleOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -61,8 +67,9 @@ function TrailerModal({ isOpen, onClose, tmdbId, mediaType }: TrailerModalProps)
   const trailer = data?.trailer
   const details = data?.tmdb
 
-  return (
+  const modalContent = (
     <div className={overlayClassName} onClick={handleOverlayClick} aria-modal="true" role="dialog">
+      <div className={panelWrapperClassName} onClick={(e) => e.stopPropagation()}>
       <div className={panelClassName}>
         <button
           type="button"
@@ -172,8 +179,11 @@ function TrailerModal({ isOpen, onClose, tmdbId, mediaType }: TrailerModalProps)
           </div>
         </div>
       </div>
+      </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }
 
 export { TrailerModal }

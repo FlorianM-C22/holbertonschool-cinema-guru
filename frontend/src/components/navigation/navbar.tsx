@@ -6,6 +6,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import logo from "@/assets/logo.png"
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { SearchBar } from "@/components/ui/search-bar"
+import { TrailerModal } from "@/components/trailer-modal"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/data/auth/context"
 import { cn } from "@/lib/utils"
 import type { MovieCategory, TvCategory } from "@/data/tmdb/types"
+import { useMediaSearch } from "@/data/tmdb/hooks"
 
 const SCROLL_THRESHOLD_PX = 24
 const HOVER_CLOSE_DELAY_MS = 150
@@ -31,6 +33,12 @@ function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [moviesOpen, setMoviesOpen] = useState(false)
   const [tvOpen, setTvOpen] = useState(false)
+  const [headerQuery, setHeaderQuery] = useState("")
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [modalMedia, setModalMedia] = useState<{
+    tmdbId: number
+    mediaType: "movie" | "tv"
+  } | null>(null)
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { username, logout } = useAuth()
   const navigate = useNavigate()
@@ -84,8 +92,25 @@ function Navbar() {
   }
 
   const toggleSearch = () => {
-    setIsSearchVisible((prev) => !prev)
+    setIsSearchVisible((prev) => {
+      const next = !prev
+      if (!next) {
+        setShowSuggestions(false)
+        setHeaderQuery("")
+      }
+      return next
+    })
   }
+
+  const trimmedHeaderQuery = headerQuery.trim()
+  const shouldSearchHeader =
+    isSearchVisible && trimmedHeaderQuery.length >= 2
+  const {
+    data: headerSearchData,
+  } = useMediaSearch({
+    query: shouldSearchHeader ? trimmedHeaderQuery : undefined,
+    type: "all",
+  })
 
   return (
     <nav
@@ -204,30 +229,85 @@ function Navbar() {
           <div className="flex-1" />
 
           <div className="flex items-center gap-4">
-            <div
-              className={cn(
-                "overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
-                isSearchVisible ? "max-w-xl opacity-100" : "max-w-0 opacity-0",
-              )}
-            >
+            <div className="relative">
               <div
                 className={cn(
-                  "w-[22rem] transition-transform duration-300 ease-in-out",
-                  isSearchVisible ? "translate-x-0" : "translate-x-4",
+                  "overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out",
+                  isSearchVisible ? "max-w-xl opacity-100" : "max-w-0 opacity-0",
                 )}
               >
-                <SearchBar
-                  className="w-full"
-                  onSearch={(value) => {
-                    const trimmed = value.trim()
-                    if (trimmed.length === 0) return
-                    const params = new URLSearchParams()
-                    params.set("q", trimmed)
-                    params.set("type", "all")
-                    navigate(`/search?${params.toString()}`)
-                  }}
-                />
+                <div
+                  className={cn(
+                    "w-[22rem] transition-transform duration-300 ease-in-out",
+                    isSearchVisible ? "translate-x-0" : "translate-x-4",
+                  )}
+                >
+                  <SearchBar
+                    className="w-full"
+                    value={headerQuery}
+                    isDynamicSearch
+                    onDebouncedChange={(value) => {
+                      setHeaderQuery(value)
+                      setShowSuggestions(
+                        isSearchVisible && value.trim().length >= 2,
+                      )
+                    }}
+                    onSearch={(value) => {
+                      const trimmed = value.trim()
+                      if (trimmed.length === 0) {
+                        setHeaderQuery("")
+                        setShowSuggestions(false)
+                        return
+                      }
+                      setShowSuggestions(false)
+                      const params = new URLSearchParams()
+                      params.set("q", trimmed)
+                      params.set("type", "all")
+                      navigate(`/search?${params.toString()}`)
+                    }}
+                  />
+                </div>
               </div>
+              {showSuggestions &&
+                shouldSearchHeader &&
+                headerSearchData &&
+                headerSearchData.results.length > 0 && (
+                  <div className="absolute right-0 mt-2 w-[22rem] rounded-lg border bg-popover text-sm shadow-lg">
+                    <ul className="max-h-80 overflow-y-auto">
+                      {headerSearchData.results.slice(0, 8).map((item) => {
+                        const year =
+                          item.mediaType === "movie"
+                            ? item.releaseDate?.slice(0, 4)
+                            : item.firstAirDate?.slice(0, 4)
+                        return (
+                          <li key={`${item.mediaType}-${item.id}`}>
+                            <button
+                              type="button"
+                              className="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left hover:bg-muted"
+                              onClick={() => {
+                                setModalMedia({
+                                  tmdbId: item.id,
+                                  mediaType: item.mediaType,
+                                })
+                                setHeaderQuery("")
+                                setShowSuggestions(false)
+                                setIsSearchVisible(false)
+                              }}
+                            >
+                              <span className="text-sm font-medium">
+                                {item.title}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {item.mediaType === "movie" ? "Movie" : "TV show"}
+                                {year ? ` · ${year}` : ""}
+                              </span>
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )}
             </div>
             <Button
               variant="ghost"
@@ -288,6 +368,12 @@ function Navbar() {
           </div>
         </div>
       </div>
+      <TrailerModal
+        isOpen={modalMedia != null}
+        onClose={() => setModalMedia(null)}
+        tmdbId={modalMedia?.tmdbId ?? null}
+        mediaType={modalMedia?.mediaType ?? "movie"}
+      />
     </nav>
   )
 }

@@ -172,6 +172,45 @@ function useGenres(): GenresHookResult {
   return { getGenreNames, loaded, movieGenres, tvGenres }
 }
 
+type LanguagesHookResult = {
+  languages: { code: string; label: string }[]
+  loaded: boolean
+}
+
+function useLanguages(): LanguagesHookResult {
+  const [languages, setLanguages] = useState<{ code: string; label: string }[]>([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    tmdbApi
+      .fetchLanguages()
+      .then(
+        (items) => {
+          if (cancelled) return
+          const mapped = (items ?? [])
+            .filter((lang) => typeof lang.iso_639_1 === "string" && lang.iso_639_1.trim().length > 0)
+            .map((lang) => ({
+              code: lang.iso_639_1,
+              label: lang.english_name || lang.name || lang.iso_639_1,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+          setLanguages(mapped)
+          setLoaded(true)
+        },
+        () => {
+          if (!cancelled) setLoaded(true)
+        },
+      )
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return { languages, loaded }
+}
+
 function useMediaSearch(params: MediaSearchParams): MediaSearchState {
   const [state, setState] = useState<MediaSearchState>({
     data: null,
@@ -232,9 +271,9 @@ function useMediaSearch(params: MediaSearchParams): MediaSearchState {
     return () => {
       cancelled = true
     }
-  }, [params.query, params.type, params.genreIds, params.yearMin, params.yearMax, params.page])
+  }, [params.query, params.type, params.genreIds, params.yearMin, params.yearMax, params.originalLanguage, params.page])
 
   return state
 }
 
-export { useImageConfig, useMovieList, useTvList, useGenres, useMediaSearch }
+export { useImageConfig, useMovieList, useTvList, useGenres, useLanguages, useMediaSearch }
