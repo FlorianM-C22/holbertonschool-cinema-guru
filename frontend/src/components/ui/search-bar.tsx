@@ -10,23 +10,59 @@ import {
 } from "@/components/ui/input-group"
 import { cn } from "@/lib/utils"
 
+const DEBOUNCE_MS = 350
+
 interface SearchBarProps extends React.ComponentProps<"input"> {
+  value?: string
   onSearch?: (value: string) => void
 }
 
 function SearchBar({
   className,
   placeholder,
+  value: valueFromUrl,
   onSearch,
   ...props
 }: SearchBarProps) {
   const { t } = useTranslation()
   const resolvedPlaceholder = placeholder ?? t("search.placeholder")
-  const [value, setValue] = React.useState("")
+  const [value, setValue] = React.useState(valueFromUrl ?? "")
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  React.useEffect(() => {
+    setValue(valueFromUrl ?? "")
+  }, [valueFromUrl])
+
+  React.useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
+  const applySearch = React.useCallback(
+    (raw: string) => {
+      const trimmed = raw.trim()
+      onSearch?.(trimmed)
+    },
+    [onSearch],
+  )
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value
+    setValue(next)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (onSearch) {
+      debounceRef.current = setTimeout(() => applySearch(next), DEBOUNCE_MS)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSearch?.(value)
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
+    applySearch(value)
   }
 
   return (
@@ -43,7 +79,7 @@ function SearchBar({
           className="placeholder:text-neutral-500"
           {...props}
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={handleChange}
         />
         <InputGroupAddon align="inline-start">
           <Search className="text-neutral-500" />

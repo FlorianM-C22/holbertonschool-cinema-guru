@@ -6,6 +6,7 @@
   },
   "nav": {
     "home": "Home",
+    "search": "Search",
     "movies": "Movies",
     "tvShows": "TV Shows",
     "favourites": "Favourites",

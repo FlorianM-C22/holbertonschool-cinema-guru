@@ -113,6 +113,17 @@ function Navbar() {
             >
               {t("nav.home")}
             </Link>
+            <Link
+              to="/search"
+              className="text-sm font-medium text-foreground/90 transition-colors hover:text-foreground"
+            >
+              {t("nav.search")}
+            </Link>
+            <div
+              className="h-4 w-px shrink-0 bg-border"
+              role="separator"
+              aria-hidden
+            />
             <DropdownMenu open={moviesOpen} onOpenChange={setMoviesOpen}>
               <DropdownMenuTrigger asChild>
                 <button

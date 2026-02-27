@@ -181,10 +181,29 @@ async function searchMedia(options) {
     let combinedTotalPages = 1
     let combinedTotalResults = 0
 
+    const hasSingleYear =
+        hasYearMin &&
+        hasYearMax &&
+        typeof yearMin === 'number' &&
+        typeof yearMax === 'number' &&
+        yearMin === yearMax
+
+    const searchYearMovie =
+        hasQuery && hasSingleYear
+            ? yearMin
+            : undefined
+    const searchYearTv =
+        hasQuery && hasSingleYear
+            ? yearMin
+            : undefined
+
     if (type === 'movie' || type === 'all') {
         const params = { page: parsedPage }
         if (hasQuery) {
             params.query = q.trim()
+            if (typeof searchYearMovie === 'number') {
+                params.primary_release_year = searchYearMovie
+            }
         } else {
             Object.assign(params, sharedDiscoverParams)
         }
@@ -194,10 +213,17 @@ async function searchMedia(options) {
             params
         )
 
-        const movieResults = Array.isArray(movieData.results)
+        let movieResults = Array.isArray(movieData.results)
             ? movieData.results.map(normalizeMovieResult)
             : []
-
+        if (hasQuery && hasYearMin && hasYearMax && movieResults.length > 0) {
+            const minDate = `${yearMin}-01-01`
+            const maxDate = `${yearMax}-12-31`
+            movieResults = movieResults.filter((r) => {
+                const d = r.releaseDate
+                return d && d >= minDate && d <= maxDate
+            })
+        }
         results.push(...movieResults)
         combinedTotalResults += movieData.total_results ?? 0
         combinedTotalPages = Math.max(combinedTotalPages, movieData.total_pages ?? 1)
@@ -207,6 +233,9 @@ async function searchMedia(options) {
         const params = { page: parsedPage }
         if (hasQuery) {
             params.query = q.trim()
+            if (typeof searchYearTv === 'number') {
+                params.first_air_date_year = searchYearTv
+            }
         } else {
             Object.assign(params, sharedTvDiscoverParams)
         }
@@ -216,10 +245,17 @@ async function searchMedia(options) {
             params
         )
 
-        const tvResults = Array.isArray(tvData.results)
+        let tvResults = Array.isArray(tvData.results)
             ? tvData.results.map(normalizeTvResult)
             : []
-
+        if (hasQuery && hasYearMin && hasYearMax && tvResults.length > 0) {
+            const minDate = `${yearMin}-01-01`
+            const maxDate = `${yearMax}-12-31`
+            tvResults = tvResults.filter((r) => {
+                const d = r.firstAirDate
+                return d && d >= minDate && d <= maxDate
+            })
+        }
         results.push(...tvResults)
         combinedTotalResults += tvData.total_results ?? 0
         combinedTotalPages = Math.max(combinedTotalPages, tvData.total_pages ?? 1)

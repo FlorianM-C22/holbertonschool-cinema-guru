@@ -72,8 +72,8 @@ function SearchContent() {
       <div className="mb-4 flex justify-center">
         <SearchBar
           className="w-full max-w-2xl"
-          onSearch={(value) => {
-            const trimmed = value.trim()
+          value={searchParams.get("q") ?? ""}
+          onSearch={(trimmed) => {
             const next = new URLSearchParams(searchParams)
             if (trimmed.length > 0) {
               next.set("q", trimmed)
