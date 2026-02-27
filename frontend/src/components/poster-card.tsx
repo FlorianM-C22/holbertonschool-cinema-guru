@@ -24,6 +24,8 @@ const FOLDED_WIDTH = "14rem"
 const EXPANDED_WIDTH = "32rem"
 const CARD_HEIGHT = "21rem"
 
+const DEFAULT_FANART_LANGUAGE = "en"
+
 function PosterCard({
   posterUrl,
   title,
@@ -50,13 +52,14 @@ function PosterCard({
   const fetchArt = useCallback(() => {
     if (hasFetchedArt.current) return
     hasFetchedArt.current = true
+    const lang = { language: DEFAULT_FANART_LANGUAGE }
     if (mediaType === "movie") {
-      fanartApi.fetchMovieArt(id).then((art) => {
+      fanartApi.fetchMovieArt(id, lang).then((art) => {
         setLogoUrl(art.logoUrl)
         setFanartBackgroundUrl(art.backgroundUrl)
       })
     } else {
-      fanartApi.fetchTvArt(id).then((art) => {
+      fanartApi.fetchTvArt(id, lang).then((art) => {
         setLogoUrl(art.logoUrl)
         setFanartBackgroundUrl(art.backgroundUrl)
       })

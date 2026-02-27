@@ -34,9 +34,17 @@ function getClientKey() {
     return process.env.FANART_TV_CLIENT_KEY || null
 }
 
-function pickBestUrl(items) {
+const DEFAULT_LANGUAGE = 'en'
+
+function pickBestUrl(items, preferredLang = DEFAULT_LANGUAGE) {
     if (!items || !items.length) return null
-    const sorted = [...items].sort((a, b) => Number(b.likes || 0) - Number(a.likes || 0))
+    const sorted = [...items].sort((a, b) => {
+        const aMatch = (a.lang || '').toLowerCase() === preferredLang
+        const bMatch = (b.lang || '').toLowerCase() === preferredLang
+        if (aMatch && !bMatch) return -1
+        if (!aMatch && bMatch) return 1
+        return Number(b.likes || 0) - Number(a.likes || 0)
+    })
     return sorted[0]?.url ?? null
 }
 
@@ -53,24 +61,26 @@ async function fetchFanart(path) {
     return res.data
 }
 
-async function getMovieArt(tmdbId) {
-    const key = cacheKey('movie', tmdbId)
+async function getMovieArt(tmdbId, options = {}) {
+    const lang = (options.lang || DEFAULT_LANGUAGE).toLowerCase()
+    const key = cacheKey('movie', `${tmdbId}:${lang}`)
     const cached = getCached(key)
     if (cached) return cached
     const result = { logoUrl: null, backgroundUrl: null }
     try {
         const data = await fetchFanart(`/movies/${tmdbId}`)
         if (data) {
-            result.logoUrl = pickBestUrl(data.hdmovielogo)
-            result.backgroundUrl = pickBestUrl(data.moviebackground)
+            result.logoUrl = pickBestUrl(data.hdmovielogo, lang)
+            result.backgroundUrl = pickBestUrl(data.moviebackground, lang)
         }
     } catch (_) {}
     setCached(key, result)
     return result
 }
 
-async function getTvArt(tmdbId) {
-    const key = cacheKey('tv', tmdbId)
+async function getTvArt(tmdbId, options = {}) {
+    const lang = (options.lang || DEFAULT_LANGUAGE).toLowerCase()
+    const key = cacheKey('tv', `${tmdbId}:${lang}`)
     const cached = getCached(key)
     if (cached) return cached
     const result = { logoUrl: null, backgroundUrl: null }
@@ -79,8 +89,8 @@ async function getTvArt(tmdbId) {
         const fanartId = tvdbId ?? tmdbId
         const data = await fetchFanart(`/tv/${fanartId}`)
         if (data) {
-            result.logoUrl = pickBestUrl(data.hdtvlogo) ?? pickBestUrl(data.clearlogo)
-            result.backgroundUrl = pickBestUrl(data.showbackground)
+            result.logoUrl = pickBestUrl(data.hdtvlogo, lang) ?? pickBestUrl(data.clearlogo, lang)
+            result.backgroundUrl = pickBestUrl(data.showbackground, lang)
         }
     } catch (_) {}
     setCached(key, result)
