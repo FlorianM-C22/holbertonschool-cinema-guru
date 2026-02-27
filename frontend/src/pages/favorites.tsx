@@ -7,6 +7,7 @@ import { fetchMovieDetail, fetchTvDetail } from "@/data/tmdb/api"
 import { getFavorites } from "@/data/lists/api"
 import { useLists } from "@/data/lists/context"
 import type { MovieResultItem, TVSeriesResultItem } from "@lorenzopant/tmdb"
+import { useTranslation } from "react-i18next"
 
 type DetailItem =
   | { mediaType: "movie"; data: MovieResultItem }
@@ -18,6 +19,7 @@ function FavoritesContent() {
   const { favoritesVersion } = useLists()
   const [details, setDetails] = useState<DetailItem[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     let cancelled = false
@@ -51,13 +53,13 @@ function FavoritesContent() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <CarouselSection title="Favoris" fullBleedRight>
+      <CarouselSection title={t("favorites.title")} fullBleedRight>
         {loading ? (
           <div className="flex gap-4 overflow-hidden py-2 text-muted-foreground">
-            Chargement…
+            {t("favorites.loading")}
           </div>
         ) : details.length === 0 ? (
-          <p className="py-8 text-muted-foreground">Aucun favori pour le moment.</p>
+          <p className="py-8 text-muted-foreground">{t("favorites.noFavorites")}</p>
         ) : (
           details.map((item) => {
             const isMovie = item.mediaType === "movie"

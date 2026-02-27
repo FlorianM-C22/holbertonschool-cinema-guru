@@ -4,6 +4,7 @@ import { Info, Heart, Clock, ChevronLeft, ChevronRight } from "lucide-react"
 import * as fanartApi from "@/data/fanart/api"
 import { useLists } from "@/data/lists/context"
 import { Button } from "@/components/ui/button"
+import { TrailerModal } from "@/components/trailer-modal"
 import { cn } from "@/lib/utils"
 
 const HERO_AUTO_ADVANCE_MS = 5500
@@ -28,6 +29,7 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [slideArts, setSlideArts] = useState<SlideArt[]>([])
   const [showArrows, setShowArrows] = useState(false)
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
   const autoAdvanceRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const current = featured[currentIndex] ?? null
@@ -53,7 +55,7 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
 
   useEffect(() => {
     if (featured.length === 0) {
-      setSlideArts([])
+      queueMicrotask(() => setSlideArts([]))
       return
     }
     let cancelled = false
@@ -203,6 +205,7 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
               variant="default"
               className="gap-2 bg-white/20 text-white hover:bg-white/30"
               aria-label={t("hero.info")}
+              onClick={() => setIsInfoModalOpen(true)}
             >
               <Info className="h-5 w-5" aria-hidden />
               {t("hero.info")}
@@ -216,7 +219,7 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
                   ? "bg-red-500/80"
                   : "bg-white/20",
               )}
-              aria-label={t("hero.addToFavourites")}
+              aria-label={t("hero.addToFavorites")}
               onClick={() =>
                 current &&
                 toggleFavorite(current.id, current.mediaType).catch(() => {})
@@ -229,7 +232,7 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
                 )}
                 aria-hidden
               />
-              {t("hero.addToFavourites")}
+              {t("hero.addToFavorites")}
             </Button>
             <Button
               size="lg"
@@ -276,6 +279,12 @@ export function HeroSection({ featured, getBackdropUrl }: HeroSectionProps) {
           ))}
         </div>
       </div>
+      <TrailerModal
+        isOpen={isInfoModalOpen}
+        onClose={() => setIsInfoModalOpen(false)}
+        tmdbId={current.id}
+        mediaType={current.mediaType}
+      />
     </section>
   )
 }

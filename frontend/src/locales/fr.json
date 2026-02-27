@@ -1,7 +1,7 @@
 {
   "hero": {
     "info": "Info",
-    "addToFavourites": "Ajouter aux favoris",
+    "addToFavorites": "Ajouter aux favoris",
     "watchLater": "À regarder"
   },
   "nav": {
@@ -9,7 +9,7 @@
     "search": "Rechercher",
     "movies": "Films",
     "tvShows": "Séries",
-    "favourites": "Favoris",
+    "favorites": "Favoris",
     "watchLater": "À regarder",
     "logOut": "Déconnexion",
     "language": "Langue",
@@ -58,5 +58,10 @@
     "placeholder": "Rechercher un film…",
     "button": "Rechercher",
     "clear": "Effacer"
+  },
+  "favorites": {
+    "title": "Favoris",
+    "loading": "Chargement…",
+    "noFavorites": "Aucun favori pour le moment."
   }
 }

@@ -1,7 +1,7 @@
 {
   "hero": {
     "info": "Info",
-    "addToFavourites": "Add to favourites",
+    "addToFavorites": "Add to favorites",
     "watchLater": "Watch later"
   },
   "nav": {
@@ -9,7 +9,7 @@
     "search": "Search",
     "movies": "Movies",
     "tvShows": "TV Shows",
-    "favourites": "Favourites",
+    "favorites": "Favorites",
     "watchLater": "Watch later",
     "logOut": "Log out",
     "language": "Language",
@@ -58,5 +58,10 @@
     "placeholder": "Search for a movie…",
     "button": "Search",
     "clear": "Clear"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "loading": "Loading…",
+    "noFavorites": "No favorites yet."
   }
 }

@@ -228,11 +228,11 @@ function useMediaSearch(params: MediaSearchParams): MediaSearchState {
       typeof params.yearMax === "number"
 
     if (!hasFilters) {
-      setState((current) => ({
+      queueMicrotask(() => setState((current) => ({
         ...current,
         isLoading: false,
         error: null,
-      }))
+      })))
       return
     }
 
